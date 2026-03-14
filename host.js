@@ -1,0 +1,410 @@
+class HostControlPanel {
+    constructor() {
+        this.questions = [
+            {
+                question: "Name something people do to relax",
+                answers: [
+                    { text: "Watch TV", points: 35 },
+                    { text: "Read", points: 25 },
+                    { text: "Listen to music", points: 20 },
+                    { text: "Take a nap", points: 15 },
+                    { text: "Meditate", points: 10 },
+                    { text: "Exercise", points: 8 },
+                    { text: "Take a bath", points: 5 },
+                    { text: "Go for a walk", points: 3 }
+                ]
+            },
+            {
+                question: "Name a common breakfast food",
+                answers: [
+                    { text: "Eggs", points: 30 },
+                    { text: "Pancakes", points: 25 },
+                    { text: "Cereal", points: 20 },
+                    { text: "Toast", points: 15 },
+                    { text: "Bacon", points: 12 },
+                    { text: "Coffee", points: 8 },
+                    { text: "Oatmeal", points: 5 },
+                    { text: "Fruit", points: 3 }
+                ]
+            },
+            {
+                question: "Name something you find in a living room",
+                answers: [
+                    { text: "Sofa/Couch", points: 35 },
+                    { text: "TV", points: 30 },
+                    { text: "Coffee table", points: 20 },
+                    { text: "Lamp", points: 15 },
+                    { text: "Bookshelf", points: 10 },
+                    { text: "Rug", points: 8 },
+                    { text: "Pictures", points: 5 },
+                    { text: "Remote control", points: 3 }
+                ]
+            },
+            {
+                question: "Name a popular vacation destination",
+                answers: [
+                    { text: "Beach", points: 35 },
+                    { text: "Disney World", points: 25 },
+                    { text: "Las Vegas", points: 20 },
+                    { text: "Hawaii", points: 15 },
+                    { text: "Europe", points: 12 },
+                    { text: "Mountains", points: 8 },
+                    { text: "New York City", points: 5 },
+                    { text: "Cruise", points: 3 }
+                ]
+            },
+            {
+                question: "Name something people are afraid of",
+                answers: [
+                    { text: "Spiders", points: 30 },
+                    { text: "Heights", points: 25 },
+                    { text: "Snakes", points: 20 },
+                    { text: "Public speaking", points: 15 },
+                    { text: "Death", points: 12 },
+                    { text: "Dark", points: 8 },
+                    { text: "Flying", points: 5 },
+                    { text: "Clowns", points: 3 }
+                ]
+            }
+        ];
+        
+        this.currentQuestionIndex = 0;
+        this.currentTeam = 1;
+        this.team1Score = 0;
+        this.team2Score = 0;
+        this.strikes = 0;
+        this.answersFound = [];
+        this.gameActive = true;
+        
+        this.initializeElements();
+        this.initializeSounds();
+        this.setupWebSocket();
+        this.loadQuestion();
+        this.startStatusUpdates();
+    }
+    
+    initializeElements() {
+        this.questionSelect = document.getElementById('questionSelect');
+        this.answersList = document.getElementById('answersList');
+        this.manualAnswersList = document.getElementById('manualAnswersList');
+        this.currentQuestionNum = document.getElementById('currentQuestionNum');
+        this.currentTeamDisplay = document.getElementById('currentTeamDisplay');
+        this.strikesDisplay = document.getElementById('strikesDisplay');
+        this.answersFoundDisplay = document.getElementById('answersFoundDisplay');
+        this.team1ScoreDisplay = document.getElementById('team1ScoreDisplay');
+        this.team2ScoreDisplay = document.getElementById('team2ScoreDisplay');
+        this.connectionStatus = document.getElementById('connectionStatus');
+        
+        this.questionSelect.addEventListener('change', () => {
+            this.currentQuestionIndex = parseInt(this.questionSelect.value);
+            this.loadQuestion();
+        });
+    }
+    
+    initializeSounds() {
+        this.sounds = {
+            correct: () => this.playAudioFile('sounds/correct-answer.mp3'),
+            wrong: () => this.playAudioFile('sounds/family-feud-buzzer.mp3'),
+            strike: () => this.playAudioFile('sounds/family-feud-buzzer.mp3'),
+            yes: () => this.playAudioFile('sounds/family-feud-yes-ding.mp3'),
+            win: this.createGameShowWinSound(),
+            roundWin: this.createGameShowWinSound()
+        };
+    }
+    
+    playAudioFile(filename) {
+        const audio = new Audio(filename);
+        audio.volume = 0.7;
+        audio.play().catch(e => console.log('Audio play failed:', e));
+    }
+    
+    createGameShowWinSound() {
+        return () => {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+            
+            notes.forEach((frequency, index) => {
+                setTimeout(() => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = frequency;
+                    oscillator.type = 'square';
+                    
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                }, index * 100);
+            });
+        };
+    }
+    
+    setupWebSocket() {
+        // Simulate connection to game
+        this.updateConnectionStatus(true);
+        
+        // Listen for messages from main game (in real implementation, this would be WebSocket)
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'familyFeudGameState') {
+                this.syncWithMainGame(JSON.parse(e.newValue));
+            }
+        });
+    }
+    
+    updateConnectionStatus(connected) {
+        if (connected) {
+            this.connectionStatus.textContent = 'Connected';
+            this.connectionStatus.className = 'connection-status connected';
+        } else {
+            this.connectionStatus.textContent = 'Disconnected';
+            this.connectionStatus.className = 'connection-status disconnected';
+        }
+    }
+    
+    syncWithMainGame(gameState) {
+        this.currentQuestionIndex = gameState.currentQuestionIndex;
+        this.currentTeam = gameState.currentTeam;
+        this.team1Score = gameState.team1Score;
+        this.team2Score = gameState.team2Score;
+        this.strikes = gameState.strikes;
+        this.answersFound = gameState.answersFound;
+        this.gameActive = gameState.gameActive;
+        
+        this.updateDisplay();
+    }
+    
+    startStatusUpdates() {
+        setInterval(() => {
+            this.updateDisplay();
+            this.broadcastGameState();
+        }, 1000);
+    }
+    
+    broadcastGameState() {
+        const gameState = {
+            currentQuestionIndex: this.currentQuestionIndex,
+            currentTeam: this.currentTeam,
+            team1Score: this.team1Score,
+            team2Score: this.team2Score,
+            strikes: this.strikes,
+            answersFound: this.answersFound,
+            gameActive: this.gameActive,
+            timestamp: Date.now()
+        };
+        
+        // Broadcast to localStorage (simulating WebSocket)
+        localStorage.setItem('familyFeudHostState', JSON.stringify(gameState));
+    }
+    
+    loadQuestion() {
+        if (this.currentQuestionIndex >= this.questions.length) {
+            this.endGame();
+            return;
+        }
+        
+        const currentQuestion = this.questions[this.currentQuestionIndex];
+        this.answersFound = [];
+        this.strikes = 0;
+        this.gameActive = true;
+        
+        this.displayAnswers();
+        this.updateDisplay();
+        this.broadcastGameState();
+    }
+    
+    displayAnswers() {
+        const currentQuestion = this.questions[this.currentQuestionIndex];
+        
+        // Update answers list
+        this.answersList.innerHTML = '';
+        this.manualAnswersList.innerHTML = '';
+        
+        currentQuestion.answers.forEach((answer, index) => {
+            const isRevealed = this.answersFound.includes(index);
+            
+            // Answers preview
+            const answerItem = document.createElement('div');
+            answerItem.className = `answer-item ${isRevealed ? 'revealed' : ''}`;
+            answerItem.innerHTML = `
+                <div class="answer-text">${index + 1}. ${answer.text}</div>
+                <div class="answer-points">${answer.points} points</div>
+            `;
+            this.answersList.appendChild(answerItem);
+            
+            // Manual reveal buttons
+            const revealBtn = document.createElement('button');
+            revealBtn.className = 'control-btn';
+            revealBtn.textContent = `Reveal: ${answer.text} (${answer.points})`;
+            revealBtn.onclick = () => this.revealAnswer(index);
+            if (isRevealed) {
+                revealBtn.disabled = true;
+                revealBtn.className = 'control-btn disabled';
+            }
+            this.manualAnswersList.appendChild(revealBtn);
+        });
+    }
+    
+    revealAnswer(index) {
+        if (this.answersFound.includes(index)) return;
+        
+        this.answersFound.push(index);
+        const currentQuestion = this.questions[this.currentQuestionIndex];
+        const answer = currentQuestion.answers[index];
+        
+        // Award points to current team
+        if (this.currentTeam === 1) {
+            this.team1Score += answer.points;
+        } else {
+            this.team2Score += answer.points;
+        }
+        
+        this.playSound('yes');
+        this.displayAnswers();
+        this.updateDisplay();
+        this.broadcastGameState();
+        
+        // Check if all answers found
+        if (this.answersFound.length === currentQuestion.answers.length) {
+            setTimeout(() => this.endRound(true), 1000);
+        }
+    }
+    
+    addStrike() {
+        if (this.strikes >= 3) return;
+        
+        this.strikes++;
+        this.playSound('strike');
+        this.updateDisplay();
+        this.broadcastGameState();
+        
+        if (this.strikes >= 3) {
+            setTimeout(() => this.endRound(false), 1000);
+        } else {
+            this.switchTeam();
+        }
+    }
+    
+    switchTeam() {
+        this.currentTeam = this.currentTeam === 1 ? 2 : 1;
+        this.updateDisplay();
+        this.broadcastGameState();
+    }
+    
+    addPoints(team, points) {
+        if (team === 1) {
+            this.team1Score += points;
+        } else {
+            this.team2Score += points;
+        }
+        this.updateDisplay();
+        this.broadcastGameState();
+    }
+    
+    endRound(won) {
+        this.gameActive = false;
+        if (won) {
+            this.playSound('roundWin');
+        }
+        this.broadcastGameState();
+    }
+    
+    nextQuestion() {
+        this.currentQuestionIndex++;
+        this.currentTeam = 1;
+        this.loadQuestion();
+    }
+    
+    newGame() {
+        this.currentQuestionIndex = 0;
+        this.currentTeam = 1;
+        this.team1Score = 0;
+        this.team2Score = 0;
+        this.strikes = 0;
+        this.answersFound = [];
+        this.gameActive = true;
+        this.loadQuestion();
+    }
+    
+    resetRound() {
+        this.answersFound = [];
+        this.strikes = 0;
+        this.gameActive = true;
+        this.displayAnswers();
+        this.updateDisplay();
+        this.broadcastGameState();
+    }
+    
+    endGame() {
+        this.gameActive = false;
+        this.playSound('win');
+        this.broadcastGameState();
+    }
+    
+    playSound(soundName) {
+        if (this.sounds[soundName]) {
+            this.sounds[soundName]();
+        }
+    }
+    
+    updateDisplay() {
+        const currentQuestion = this.questions[this.currentQuestionIndex];
+        
+        this.currentQuestionNum.textContent = `${this.currentQuestionIndex + 1} / ${this.questions.length}`;
+        this.currentTeamDisplay.textContent = `Team ${this.currentTeam}`;
+        this.strikesDisplay.textContent = `${this.strikes} / 3`;
+        this.answersFoundDisplay.textContent = `${this.answersFound.length} / ${currentQuestion.answers.length}`;
+        this.team1ScoreDisplay.textContent = this.team1Score;
+        this.team2ScoreDisplay.textContent = this.team2Score;
+        
+        this.questionSelect.value = this.currentQuestionIndex;
+    }
+}
+
+// Global functions for button onclick handlers
+let hostPanel;
+
+function loadQuestion() {
+    hostPanel.loadQuestion();
+}
+
+function addStrike() {
+    hostPanel.addStrike();
+}
+
+function switchTeam() {
+    hostPanel.switchTeam();
+}
+
+function addPoints(team, points) {
+    hostPanel.addPoints(team, points);
+}
+
+function newGame() {
+    hostPanel.newGame();
+}
+
+function nextQuestion() {
+    hostPanel.nextQuestion();
+}
+
+function resetRound() {
+    hostPanel.resetRound();
+}
+
+function endGame() {
+    hostPanel.endGame();
+}
+
+function playSound(soundName) {
+    hostPanel.playSound(soundName);
+}
+
+// Initialize host panel when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    hostPanel = new HostControlPanel();
+});

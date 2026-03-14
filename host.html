@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Feud - Host Panel</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .host-container {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 20px;
+        }
+        
+        .host-header {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            border: 2px solid #e74c3c;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .host-title {
+            font-size: 2.5rem;
+            color: #e74c3c;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+            margin-bottom: 10px;
+        }
+        
+        .host-subtitle {
+            color: #ecf0f1;
+            font-size: 1.2rem;
+        }
+        
+        .control-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .control-section {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #3498db;
+        }
+        
+        .control-section h3 {
+            color: #3498db;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        .control-group {
+            margin-bottom: 20px;
+        }
+        
+        .control-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #ecf0f1;
+            font-weight: bold;
+        }
+        
+        .control-group input, .control-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #3498db;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1rem;
+        }
+        
+        .control-group input::placeholder {
+            color: #bdc3c7;
+        }
+        
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .control-btn {
+            padding: 12px 20px;
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .control-btn:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .control-btn.danger {
+            background: #e74c3c;
+        }
+        
+        .control-btn.danger:hover {
+            background: #c0392b;
+        }
+        
+        .control-btn.success {
+            background: #27ae60;
+        }
+        
+        .control-btn.success:hover {
+            background: #229954;
+        }
+        
+        .control-btn.warning {
+            background: #f39c12;
+        }
+        
+        .control-btn.warning:hover {
+            background: #e67e22;
+        }
+        
+        .answers-preview {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #27ae60;
+            margin-bottom: 30px;
+        }
+        
+        .answers-preview h3 {
+            color: #27ae60;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        .answer-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+        
+        .answer-item {
+            background: rgba(39, 174, 96, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #27ae60;
+            transition: all 0.3s ease;
+        }
+        
+        .answer-item.revealed {
+            background: rgba(39, 174, 96, 0.4);
+            border-color: #2ecc71;
+        }
+        
+        .answer-text {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .answer-points {
+            color: #f39c12;
+            font-size: 1.2rem;
+        }
+        
+        .game-status {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 25px;
+            border-radius: 15px;
+            border: 2px solid #f39c12;
+            margin-bottom: 30px;
+        }
+        
+        .game-status h3 {
+            color: #f39c12;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .status-item {
+            background: rgba(243, 156, 18, 0.2);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid #f39c12;
+        }
+        
+        .status-label {
+            color: #ecf0f1;
+            margin-bottom: 5px;
+        }
+        
+        .status-value {
+            color: #f39c12;
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        .team-scores {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .team-score-card {
+            background: rgba(52, 152, 219, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px solid #3498db;
+            text-align: center;
+            min-width: 150px;
+        }
+        
+        .team-score-card.team2 {
+            background: rgba(231, 76, 60, 0.2);
+            border-color: #e74c3c;
+        }
+        
+        .team-name {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .team-score {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #f39c12;
+        }
+        
+        .connection-status {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            z-index: 1000;
+        }
+        
+        .connection-status.connected {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .connection-status.disconnected {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        @media (max-width: 768px) {
+            .control-panel {
+                grid-template-columns: 1fr;
+            }
+            
+            .status-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .team-scores {
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="host-container">
+        <div class="connection-status" id="connectionStatus">Connected</div>
+        
+        <header class="host-header">
+            <h1 class="host-title">🎙️ HOST CONTROL PANEL</h1>
+            <p class="host-subtitle">Complete Game Control & Answer Management</p>
+        </header>
+        
+        <section class="game-status">
+            <h3>Game Status</h3>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="status-label">Current Question</div>
+                    <div class="status-value" id="currentQuestionNum">1 / 5</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Current Team</div>
+                    <div class="status-value" id="currentTeamDisplay">Team 1</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Strikes</div>
+                    <div class="status-value" id="strikesDisplay">0 / 3</div>
+                </div>
+                <div class="status-item">
+                    <div class="status-label">Answers Found</div>
+                    <div class="status-value" id="answersFoundDisplay">0 / 8</div>
+                </div>
+            </div>
+            
+            <div class="team-scores">
+                <div class="team-score-card">
+                    <div class="team-name">Team 1</div>
+                    <div class="team-score" id="team1ScoreDisplay">0</div>
+                </div>
+                <div class="team-score-card team2">
+                    <div class="team-name">Team 2</div>
+                    <div class="team-score" id="team2ScoreDisplay">0</div>
+                </div>
+            </div>
+        </section>
+        
+        <section class="answers-preview">
+            <h3>Current Answers (Host View)</h3>
+            <div class="answer-list" id="answersList">
+                <!-- Answers will be populated here -->
+            </div>
+        </section>
+        
+        <div class="control-panel">
+            <section class="control-section">
+                <h3>Game Controls</h3>
+                
+                <div class="control-group">
+                    <label>Question Selection</label>
+                    <select id="questionSelect">
+                        <option value="0">Question 1: Name something people do to relax</option>
+                        <option value="1">Question 2: Name a common breakfast food</option>
+                        <option value="2">Question 3: Name something you find in a living room</option>
+                        <option value="3">Question 4: Name a popular vacation destination</option>
+                        <option value="4">Question 5: Name something people are afraid of</option>
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label>Quick Actions</label>
+                    <div class="control-buttons">
+                        <button class="control-btn success" onclick="loadQuestion()">Load Question</button>
+                        <button class="control-btn warning" onclick="addStrike()">Add Strike</button>
+                        <button class="control-btn" onclick="switchTeam()">Switch Team</button>
+                        <button class="control-btn danger" onclick="resetRound()">Reset Round</button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label>Game Management</label>
+                    <div class="control-buttons">
+                        <button class="control-btn success" onclick="newGame()">New Game</button>
+                        <button class="control-btn" onclick="nextQuestion()">Next Question</button>
+                        <button class="control-btn danger" onclick="endGame()">End Game</button>
+                    </div>
+                </div>
+            </section>
+            
+            <section class="control-section">
+                <h3>Answer Controls</h3>
+                
+                <div class="control-group">
+                    <label>Reveal Answers Manually</label>
+                    <div class="answer-list" id="manualAnswersList">
+                        <!-- Manual reveal buttons will be populated here -->
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label>Score Management</label>
+                    <div class="control-buttons">
+                        <button class="control-btn" onclick="addPoints(1, 10)">Team 1 +10</button>
+                        <button class="control-btn" onclick="addPoints(2, 10)">Team 2 +10</button>
+                        <button class="control-btn" onclick="addPoints(1, 50)">Team 1 +50</button>
+                        <button class="control-btn" onclick="addPoints(2, 50)">Team 2 +50</button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label>Sound Effects</label>
+                    <div class="control-buttons">
+                        <button class="control-btn success" onclick="playSound('correct')">Correct Answer</button>
+                        <button class="control-btn danger" onclick="playSound('wrong')">Wrong Answer</button>
+                        <button class="control-btn warning" onclick="playSound('strike')">Strike</button>
+                        <button class="control-btn" onclick="playSound('win')">Win Sound</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+    
+    <script src="host.js"></script>
+</body>
+</html>

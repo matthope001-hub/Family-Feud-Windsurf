@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Feud - Welcome</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .welcome-container {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .welcome-title {
+            font-size: 5rem;
+            color: #ffd700;
+            text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.7);
+            margin-bottom: 20px;
+            letter-spacing: 4px;
+            animation: pulse 2s infinite;
+            font-family: 'Arial Black', Arial, sans-serif;
+        }
+        
+        .welcome-subtitle {
+            font-size: 2rem;
+            color: #87ceeb;
+            margin-bottom: 40px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+        }
+        
+        .welcome-buttons {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .welcome-btn {
+            padding: 20px 40px;
+            font-size: 1.3rem;
+            background: #ffd700;
+            color: #1e3c72;
+            border: none;
+            border-radius: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Arial Black', Arial, sans-serif;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .welcome-btn:hover {
+            background: #ffed4e;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(255, 215, 0, 0.4);
+        }
+        
+        .host-btn {
+            background: #ff6b6b;
+            color: white;
+        }
+        
+        .host-btn:hover {
+            background: #ff5252;
+        }
+        
+        .audio-controls {
+            margin-top: 30px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .audio-btn {
+            padding: 10px 20px;
+            background: rgba(255, 215, 0, 0.2);
+            border: 2px solid #ffd700;
+            color: #ffd700;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .audio-btn:hover {
+            background: rgba(255, 215, 0, 0.3);
+        }
+        
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #ffd700;
+        }
+        
+        .volume-slider {
+            width: 100px;
+        }
+        
+        .family-logo {
+            width: 300px;
+            height: 150px;
+            background: transparent;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .family-logo img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 30px rgba(255, 215, 0, 0.3));
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .instructions {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #ffd700;
+            max-width: 600px;
+            margin-top: 30px;
+        }
+        
+        .instructions h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .instructions p {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+    <div class="welcome-container">
+        <div class="family-logo">
+            <img src="images/family-feud-logo.png" alt="Family Feud Logo">
+        </div>
+        <h1 class="welcome-title">FAMILY FEUD</h1>
+        <p class="welcome-subtitle">The Ultimate Survey Game Show Experience</p>
+        
+        <div class="welcome-buttons">
+            <button class="welcome-btn" onclick="startGame()">Start Game</button>
+            <button class="welcome-btn host-btn" onclick="openHostPanel()">Host Panel</button>
+        </div>
+        
+        <div class="audio-controls">
+            <div class="volume-control">
+                <span>🔊</span>
+                <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="70">
+                <span id="volumeLabel">70%</span>
+            </div>
+            <div class="audio-status" id="audioStatus">🔇 Interact to play theme</div>
+        </div>
+        
+        <div class="instructions">
+            <h3>How to Play</h3>
+            <p>🎯 Two teams compete to find the most popular survey answers</p>
+            <p>💯 Each answer has different point values based on survey results</p>
+            <p>❌ Three strikes and your team loses the round</p>
+            <p>🏆 Highest score at the end wins the game!</p>
+        </div>
+    </div>
+    
+    <audio id="themeAudio" loop>
+        <source src="sounds/family-feud-theme-harvey.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    
+    <script>
+        let themeAudio = document.getElementById('themeAudio');
+        let volumeSlider = document.getElementById('volumeSlider');
+        let volumeLabel = document.getElementById('volumeLabel');
+        let audioStatus = document.getElementById('audioStatus');
+        
+        // Set initial volume
+        themeAudio.volume = 0.7;
+        
+        // Volume control
+        volumeSlider.addEventListener('input', function() {
+            let volume = this.value / 100;
+            themeAudio.volume = volume;
+            volumeLabel.textContent = this.value + '%';
+        });
+        
+        function updateStatus(status, emoji) {
+            audioStatus.textContent = `${emoji} ${status}`;
+            console.log(status);
+        }
+        
+        function playHarveyTheme() {
+            updateStatus('Testing Harvey Era theme...', '⏳');
+            
+            // Test the Harvey Era audio file first
+            const testAudio = new Audio('sounds/family-feud-theme-harvey.mp3');
+            testAudio.volume = 0.7;
+            
+            testAudio.addEventListener('canplaythrough', () => {
+                console.log('✅ Harvey Era audio file can play through');
+                updateStatus('Playing Harvey Era Family Feud Theme', '🎵');
+                // Use the main themeAudio element for continuous play
+                themeAudio.src = 'sounds/family-feud-theme-harvey.mp3';
+                themeAudio.volume = 0.7;
+                themeAudio.play();
+            });
+            
+            testAudio.addEventListener('error', (e) => {
+                console.log('❌ Harvey Era audio file error:', e);
+                updateStatus('Harvey Failed - Using Generated', '🎹');
+                playGeneratedTheme();
+            });
+            
+            // Try to load and test
+            testAudio.load();
+        }
+        
+        function play101Theme() {
+            updateStatus('Testing 101Soundboards theme...', '⏳');
+            
+            // Test the 101Soundboards audio file first
+            const testAudio = new Audio('sounds/family-feud-theme-101soundboards.mp3');
+            testAudio.volume = 0.7;
+            
+            testAudio.addEventListener('canplaythrough', () => {
+                console.log('✅ 101Soundboards audio file can play through');
+                updateStatus('Playing 101Soundboards Family Feud Theme', '🎼');
+                // Use the main themeAudio element for continuous play
+                themeAudio.src = 'sounds/family-feud-theme-101soundboards.mp3';
+                themeAudio.volume = 0.7;
+                themeAudio.play();
+            });
+            
+            testAudio.addEventListener('error', (e) => {
+                console.log('❌ 101Soundboards audio file error:', e);
+                updateStatus('101Soundboards Failed - Using Generated', '🎹');
+                playGeneratedTheme();
+            });
+            
+            // Try to load and test
+            testAudio.load();
+        }
+        
+        function playGeneratedTheme() {
+            updateStatus('Playing Generated Theme', '🎹');
+            // Fallback to generated theme if audio file fails
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const melody = [
+                {note: 440, duration: 0.2}, // A4
+                {note: 440, duration: 0.2}, // A4
+                {note: 523.25, duration: 0.3}, // C5
+                {note: 440, duration: 0.2}, // A4
+                {note: 392, duration: 0.3}, // G4
+                {note: 349.23, duration: 0.4}, // F4
+                {note: 392, duration: 0.3}, // G4
+                {note: 523.25, duration: 0.3}, // C5
+                {note: 659.25, duration: 0.4}, // E5
+            ];
+            
+            let startTime = audioContext.currentTime;
+            
+            melody.forEach((tone, index) => {
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = tone.note;
+                oscillator.type = 'square';
+                
+                const noteStart = startTime + melody.slice(0, index).reduce((sum, t) => sum + t.duration, 0);
+                
+                gainNode.gain.setValueAtTime(0, noteStart);
+                gainNode.gain.linearRampToValueAtTime(0.3, noteStart + 0.01);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, noteStart + tone.duration);
+                
+                oscillator.start(noteStart);
+                oscillator.stop(noteStart + tone.duration);
+            });
+            
+            // Update status when finished
+            setTimeout(() => {
+                updateStatus('Theme Complete', '✅');
+            }, melody.reduce((sum, tone) => sum + tone.duration, 0) * 1000);
+        }
+
+        function stopTheme() {
+            themeAudio.pause();
+            themeAudio.currentTime = 0;
+            updateStatus('Audio Stopped', '⏹️');
+        }
+
+        function startGame() {
+            window.location.href = 'index.html';
+        }
+        
+        function openHostPanel() {
+            window.open('host.html', '_blank');
+        }
+        
+        // Auto-play theme when page loads
+        window.addEventListener('load', function() {
+            updateStatus('Initializing audio system...', '⏳');
+            
+            // Create and trigger a user interaction immediately
+            function triggerUserInteraction() {
+                // Create a real user interaction that browsers accept
+                const event = new MouseEvent('click', {
+                    bubbles: true,
+                    cancelable: true,
+                    view: window
+                });
+                
+                // Create audio context and ensure it's properly initialized
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                
+                // Create and play a silent sound to initialize the context
+                const silentOscillator = audioContext.createOscillator();
+                const silentGain = audioContext.createGain();
+                silentOscillator.connect(silentGain);
+                silentGain.connect(audioContext.destination);
+                silentOscillator.start();
+                silentOscillator.stop(audioContext.currentTime + 0.1);
+                
+                // Dispatch the click event to simulate user interaction
+                document.dispatchEvent(event);
+                
+                // Wait a moment for context to be ready
+                setTimeout(() => {
+                    // Try Harvey Era theme with properly initialized context
+                    console.log('Attempting to play Harvey Era theme with ready context...');
+                    const testAudio = new Audio('sounds/family-feud-theme-harvey.mp3');
+                    testAudio.volume = 0.7;
+                    
+                    testAudio.addEventListener('canplaythrough', () => {
+                        console.log('✅ Harvey Era audio file can play through');
+                        updateStatus('Auto-playing Harvey Era Family Feud Theme', '🎵');
+                        
+                        // Stop the silent oscillator
+                        silentOscillator.stop();
+                        
+                        // Resume audio context if needed
+                        if (audioContext.state === 'suspended') {
+                            audioContext.resume();
+                        }
+                        
+                        // Use the main themeAudio element for continuous play
+                        themeAudio.src = 'sounds/family-feud-theme-harvey.mp3';
+                        themeAudio.volume = 0.7;
+                        themeAudio.play();
+                    });
+                    
+                    testAudio.addEventListener('error', (e) => {
+                        console.log('❌ Harvey Era failed, trying 101Soundboards:', e);
+                        updateStatus('Trying 101Soundboards Theme', '🎼');
+                        const testAudio2 = new Audio('sounds/family-feud-theme-101soundboards.mp3');
+                        testAudio2.volume = 0.7;
+                        
+                        testAudio2.addEventListener('canplaythrough', () => {
+                            console.log('✅ 101Soundboards audio file can play through');
+                            updateStatus('Auto-playing 101Soundboards Theme', '🎼');
+                            themeAudio.src = 'sounds/family-feud-theme-101soundboards.mp3';
+                            themeAudio.volume = 0.7;
+                            themeAudio.play();
+                        });
+                        
+                        testAudio2.addEventListener('error', (e) => {
+                            console.log('❌ Both MP3s failed, using generated theme:', e);
+                            updateStatus('Auto-playing Generated Theme', '🎹');
+                            playGeneratedTheme();
+                        });
+                        
+                        testAudio2.load();
+                    });
+                    
+                    testAudio.load();
+                }, 200);
+            }
+            
+            // Trigger interaction immediately to bypass autoplay restrictions
+            setTimeout(triggerUserInteraction, 100);
+        });
+    </script>
+</body>
+</html>

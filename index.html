@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Family Feud Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <div class="header-nav">
+                <button class="nav-btn" onclick="goToWelcome()">🏠 Welcome</button>
+                <button class="nav-btn" onclick="openHostPanel()">🎙️ Host Panel</button>
+            </div>
+            <h1 class="game-title">FAMILY FEUD</h1>
+            <div class="score-board">
+                <div class="team-score">
+                    <h2>Team 1</h2>
+                    <span id="team1-score">0</span>
+                </div>
+                <div class="team-score">
+                    <h2>Team 2</h2>
+                    <span id="team2-score">0</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="game-main">
+            <section class="question-section">
+                <div class="question-container">
+                    <h2 id="question-text">Loading question...</h2>
+                    <div class="answer-count">
+                        <span id="answers-found">0</span> / <span id="total-answers">8</span> answers found
+                    </div>
+                </div>
+            </section>
+
+            <section class="answers-section">
+                <div class="answers-grid">
+                    <div class="answer-slot" data-answer="1">
+                        <div class="answer-panel" id="panel-1">
+                            <div class="answer-face answer-front">1</div>
+                            <div class="answer-face answer-back">
+                                <div class="answer-number">1</div>
+                                <div class="answer-text"></div>
+                                <div class="answer-points"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="answer-slot" data-answer="2">
+                        <div class="answer-panel" id="panel-2">
+                            <div class="answer-face answer-front">2</div>
+                            <div class="answer-face answer-back">
+                                <div class="answer-number">2</div>
+                                <div class="answer-text"></div>
+                                <div class="answer-points"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="answer-slot" data-answer="3">
+                        <div class="answer-panel" id="panel-3">
+                            <div class="answer-face answer-front">3</div>
+                            <div class="answer-face answer-back">
+                                <div class="answer-number">3</div>
+                                <div class="answer-text"></div>
+                                <div class="answer-points"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="answer-slot" data-answer="4">
+                        <div class="answer-panel" id="panel-4">
+                            <div class="answer-face answer-front">4</div>
+                            <div class="answer-face answer-back">
+                                <div class="answer-number">4</div>
+                                <div class="answer-text"></div>
+                                <div class="answer-points"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="answer-slot" data-answer="5">
+                        <div class="answer-panel" id="panel-5">
+                            <div class="answer-face answer-front">5</div>
+                            <div class="answer-face answer-back">
+                                <div class="answer-number">5</div>
+                                <div class="answer-text"></div>
+                                <div class="answer-points"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="answer-slot" data-answer="6">
+                        <div class="answer-panel" id="panel-6">
+                            <div class="answer-face answer-front">6</div>
+                            <div class="answer-face answer-back">
+                                <div class="answer-number">6</div>
+                                <div class="answer-text"></div>
+                                <div class="answer-points"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="answer-slot" data-answer="7">
+                        <div class="answer-panel" id="panel-7">
+                            <div class="answer-face answer-front">7</div>
+                            <div class="answer-face answer-back">
+                                <div class="answer-number">7</div>
+                                <div class="answer-text"></div>
+                                <div class="answer-points"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="answer-slot" data-answer="8">
+                        <div class="answer-panel" id="panel-8">
+                            <div class="answer-face answer-front">8</div>
+                            <div class="answer-face answer-back">
+                                <div class="answer-number">8</div>
+                                <div class="answer-text"></div>
+                                <div class="answer-points"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="input-section">
+                <div class="face-off-section" id="faceOffSection">
+                    <h3>FACE OFF!</h3>
+                    <div class="face-off-teams">
+                        <div class="face-off-team" id="team1-faceoff">
+                            <h4>Team 1</h4>
+                            <button class="buzz-btn" id="team1-buzz">BUZZ</button>
+                        </div>
+                        <div class="face-off-vs">VS</div>
+                        <div class="face-off-team" id="team2-faceoff">
+                            <h4>Team 2</h4>
+                            <button class="buzz-btn" id="team2-buzz">BUZZ</button>
+                        </div>
+                    </div>
+                    <div class="face-off-answer" id="faceOffAnswer"></div>
+                </div>
+                
+                <div class="regular-play-section" id="regularPlaySection" style="display: none;">
+                    <div class="input-container">
+                        <input type="text" id="answer-input" placeholder="Type your answer here..." maxlength="50">
+                        <button id="submit-answer">Submit Answer</button>
+                    </div>
+                    <div class="team-turn">
+                        <p>Current Turn: <span id="current-team">Team 1</span></p>
+                    </div>
+                </div>
+                
+                <div class="steal-section" id="stealSection" style="display: none;">
+                    <h3>STEAL OPPORTUNITY!</h3>
+                    <p>Team <span id="stealing-team">Team 2</span> can steal by giving one correct answer!</p>
+                    <div class="input-container">
+                        <input type="text" id="steal-input" placeholder="Type your steal answer..." maxlength="50">
+                        <button id="submit-steal">Steal Answer</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="controls-section">
+                <button id="new-game">New Game</button>
+                <button id="next-question">Next Question</button>
+                <button id="strike-btn">Add Strike</button>
+                <div class="strikes-container">
+                    <div class="strike" id="strike1"></div>
+                    <div class="strike" id="strike2"></div>
+                    <div class="strike" id="strike3"></div>
+                </div>
+            </section>
+        </main>
+
+        <section class="round-result" id="round-result" style="display: none;">
+            <div class="result-content">
+                <h2 id="result-message">Round Complete!</h2>
+                <p id="result-details"></p>
+                <button id="continue-btn">Continue</button>
+            </div>
+        </section>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
