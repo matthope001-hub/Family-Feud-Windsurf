@@ -225,6 +225,26 @@ class FamilyFeudGame {
                     { text: "Students", points: 10 },
                     { text: "Chalkboard", points: 5 }
                 ]
+            },
+            {
+                question: "Name something people do on vacation",
+                answers: [
+                    { text: "Go to beach", points: 35 },
+                    { text: "Sightseeing", points: 25 },
+                    { text: "Relax", points: 20 },
+                    { text: "Shop", points: 15 },
+                    { text: "Try new food", points: 5 }
+                ]
+            },
+            {
+                question: "Name a popular pet",
+                answers: [
+                    { text: "Dog", points: 45 },
+                    { text: "Cat", points: 35 },
+                    { text: "Fish", points: 10 },
+                    { text: "Bird", points: 5 },
+                    { text: "Hamster", points: 5 }
+                ]
             }
         ];
         
