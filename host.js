@@ -95,6 +95,12 @@ class HostControlPanel {
         this.team2ScoreDisplay = document.getElementById('team2ScoreDisplay');
         this.connectionStatus = document.getElementById('connectionStatus');
         
+        // Validate critical DOM elements
+        if (!this.questionSelect || !this.answersList || !this.manualAnswersList) {
+            console.error('Critical host panel elements not found in DOM');
+            throw new Error('Required host panel elements are missing');
+        }
+        
         this.questionSelect.addEventListener('change', () => {
             this.currentQuestionIndex = parseInt(this.questionSelect.value);
             this.loadQuestion();
@@ -150,8 +156,13 @@ class HostControlPanel {
         
         // Listen for messages from main game (in real implementation, this would be WebSocket)
         window.addEventListener('storage', (e) => {
-            if (e.key === 'familyFeudGameState') {
-                this.syncWithMainGame(JSON.parse(e.newValue));
+            if (e.key === 'familyFeudGameState' && e.newValue) {
+                try {
+                    const gameState = JSON.parse(e.newValue);
+                    this.syncWithMainGame(gameState);
+                } catch (error) {
+                    console.error('Error parsing game state from localStorage:', error);
+                }
             }
         });
     }
@@ -167,22 +178,66 @@ class HostControlPanel {
     }
     
     syncWithMainGame(gameState) {
-        this.currentQuestionIndex = gameState.currentQuestionIndex;
-        this.currentTeam = gameState.currentTeam;
-        this.team1Score = gameState.team1Score;
-        this.team2Score = gameState.team2Score;
-        this.strikes = gameState.strikes;
-        this.answersFound = gameState.answersFound;
-        this.gameActive = gameState.gameActive;
-        
-        this.updateDisplay();
+        try {
+            // Validate game state structure
+            if (!gameState || typeof gameState !== 'object') {
+                console.warn('Invalid game state received');
+                return;
+            }
+            
+            const oldQuestion = this.currentQuestionIndex;
+            const oldTeam = this.currentTeam;
+            
+            // Validate and extract values with type checking
+            const newQuestionIndex = typeof gameState.currentQuestionIndex === 'number' && 
+                gameState.currentQuestionIndex >= 0 && 
+                gameState.currentQuestionIndex < this.questions.length ? 
+                gameState.currentQuestionIndex : this.currentQuestionIndex;
+            
+            const newTeam = typeof gameState.currentTeam === 'number' && 
+                (gameState.currentTeam === 1 || gameState.currentTeam === 2) ? 
+                gameState.currentTeam : this.currentTeam;
+            
+            const newTeam1Score = typeof gameState.team1Score === 'number' && 
+                gameState.team1Score >= 0 ? gameState.team1Score : this.team1Score;
+            
+            const newTeam2Score = typeof gameState.team2Score === 'number' && 
+                gameState.team2Score >= 0 ? gameState.team2Score : this.team2Score;
+            
+            const newStrikes = typeof gameState.strikes === 'number' && 
+                gameState.strikes >= 0 && gameState.strikes <= 3 ? 
+                gameState.strikes : this.strikes;
+            
+            const newAnswersFound = Array.isArray(gameState.answersFound) ? 
+                gameState.answersFound.filter(index => 
+                    typeof index === 'number' && index >= 0 && index < this.questions[this.currentQuestionIndex]?.answers?.length
+                ) : this.answersFound;
+            
+            const newGameActive = typeof gameState.gameActive === 'boolean' ? 
+                gameState.gameActive : this.gameActive;
+            
+            // Update state
+            this.currentQuestionIndex = newQuestionIndex;
+            this.currentTeam = newTeam;
+            this.team1Score = newTeam1Score;
+            this.team2Score = newTeam2Score;
+            this.strikes = newStrikes;
+            this.answersFound = newAnswersFound;
+            this.gameActive = newGameActive;
+            
+            // Update display if state changed
+            if (oldQuestion !== this.currentQuestionIndex || oldTeam !== this.currentTeam) {
+                this.displayAnswers();
+                this.updateDisplay();
+            }
+        } catch (error) {
+            console.error('Error syncing with main game:', error);
+        }
     }
     
     startStatusUpdates() {
-        setInterval(() => {
-            this.updateDisplay();
-            this.broadcastGameState();
-        }, 1000);
+        // Remove excessive interval updates - display will be updated on state changes
+        this.updateDisplay();
     }
     
     broadcastGameState() {
@@ -227,13 +282,20 @@ class HostControlPanel {
         currentQuestion.answers.forEach((answer, index) => {
             const isRevealed = this.answersFound.includes(index);
             
-            // Answers preview
+            // Answers preview - use secure DOM manipulation
             const answerItem = document.createElement('div');
             answerItem.className = `answer-item ${isRevealed ? 'revealed' : ''}`;
-            answerItem.innerHTML = `
-                <div class="answer-text">${index + 1}. ${answer.text}</div>
-                <div class="answer-points">${answer.points} points</div>
-            `;
+            
+            const answerTextDiv = document.createElement('div');
+            answerTextDiv.className = 'answer-text';
+            answerTextDiv.textContent = `${index + 1}. ${answer.text}`;
+            
+            const answerPointsDiv = document.createElement('div');
+            answerPointsDiv.className = 'answer-points';
+            answerPointsDiv.textContent = `${answer.points} points`;
+            
+            answerItem.appendChild(answerTextDiv);
+            answerItem.appendChild(answerPointsDiv);
             this.answersList.appendChild(answerItem);
             
             // Manual reveal buttons

@@ -259,23 +259,48 @@ class FamilyFeudGame {
     }
     
     getNextQuestion() {
-        if (this.availableQuestions.length === 0) {
-            // All questions used, reset the pool
-            this.usedQuestions = [];
-            this.availableQuestions = [...Array(this.questions.length).keys()];
-            this.shuffleQuestions();
-            console.log('All questions used! Resetting question pool...');
+        try {
+            if (this.availableQuestions.length === 0) {
+                // All questions used, reset the pool
+                this.usedQuestions = [];
+                this.availableQuestions = [...Array(this.questions.length).keys()];
+                this.shuffleQuestions();
+                console.log('All questions used! Resetting question pool...');
+            }
+            
+            if (this.availableQuestions.length === 0 || this.questions.length === 0) {
+                throw new Error('No questions available');
+            }
+            
+            // Get next random question from available pool
+            const randomIndex = Math.floor(Math.random() * this.availableQuestions.length);
+            const questionIndex = this.availableQuestions[randomIndex];
+            
+            // Validate question index
+            if (questionIndex < 0 || questionIndex >= this.questions.length) {
+                throw new Error(`Invalid question index: ${questionIndex}`);
+            }
+            
+            // Validate question data
+            const question = this.questions[questionIndex];
+            if (!question || !question.question || !Array.isArray(question.answers)) {
+                throw new Error(`Invalid question data at index ${questionIndex}`);
+            }
+            
+            // Remove from available and add to used
+            this.availableQuestions.splice(randomIndex, 1);
+            this.usedQuestions.push(questionIndex);
+            
+            return questionIndex;
+        } catch (error) {
+            console.error('Error getting next question:', error);
+            // Fallback to first question if available
+            if (this.questions.length > 0) {
+                console.log('Falling back to first question');
+                return 0;
+            }
+            throw new Error('No valid questions available');
         }
-        
-        // Get next random question from available pool
-        const randomIndex = Math.floor(Math.random() * this.availableQuestions.length);
-        const questionIndex = this.availableQuestions[randomIndex];
-        
-        // Remove from available and add to used
-        this.availableQuestions.splice(randomIndex, 1);
-        this.usedQuestions.push(questionIndex);
-        
-        return questionIndex;
     }
     
     initializeSounds() {
@@ -342,49 +367,103 @@ class FamilyFeudGame {
         this.resultDetails = document.getElementById('result-details');
         this.continueBtn = document.getElementById('continue-btn');
         
+        // Validate critical DOM elements
+        if (!this.questionText || !this.answerInput || !this.submitBtn) {
+            console.error('Critical game elements not found in DOM');
+            throw new Error('Required game elements are missing');
+        }
+        
         this.answerSlots = document.querySelectorAll('.answer-slot');
         this.strikeElements = [
             document.getElementById('strike1'),
             document.getElementById('strike2'),
             document.getElementById('strike3')
         ];
+        
+        // Validate strike elements
+        this.strikeElements = this.strikeElements.filter(el => el !== null);
+        if (this.strikeElements.length !== 3) {
+            console.warn('Some strike elements not found');
+        }
     }
     
     setupHostSync() {
         // Listen for host updates via localStorage
         window.addEventListener('storage', (e) => {
-            if (e.key === 'familyFeudHostState') {
-                const hostState = JSON.parse(e.newValue);
-                this.syncFromHost(hostState);
+            if (e.key === 'familyFeudHostState' && e.newValue) {
+                try {
+                    const hostState = JSON.parse(e.newValue);
+                    this.syncFromHost(hostState);
+                } catch (error) {
+                    console.error('Error parsing host state from localStorage:', error);
+                }
             }
         });
         
-        // Start broadcasting game state
-        setInterval(() => this.broadcastGameState(), 1000);
+        // Remove excessive broadcasting - will only broadcast on state changes
     }
     
     syncFromHost(hostState) {
-        const oldQuestion = this.currentQuestionIndex;
-        const oldTeam = this.currentTeam;
-        
-        this.currentQuestionIndex = hostState.currentQuestionIndex;
-        this.currentTeam = hostState.currentTeam;
-        this.team1Score = hostState.team1Score;
-        this.team2Score = hostState.team2Score;
-        this.strikes = hostState.strikes;
-        this.answersFound = hostState.answersFound;
-        this.gameActive = hostState.gameActive;
-        
-        // Reload question if changed
-        if (oldQuestion !== this.currentQuestionIndex) {
-            this.loadQuestion();
-        } else {
-            this.updateDisplay();
-        }
-        
-        // Update team display if changed
-        if (oldTeam !== this.currentTeam) {
-            this.currentTeamEl.textContent = `Team ${this.currentTeam}`;
+        try {
+            // Validate host state structure
+            if (!hostState || typeof hostState !== 'object') {
+                console.warn('Invalid host state received');
+                return;
+            }
+            
+            const oldQuestion = this.currentQuestionIndex;
+            const oldTeam = this.currentTeam;
+            
+            // Validate and extract values with type checking
+            const newQuestionIndex = typeof hostState.currentQuestionIndex === 'number' && 
+                hostState.currentQuestionIndex >= 0 && 
+                hostState.currentQuestionIndex < this.questions.length ? 
+                hostState.currentQuestionIndex : this.currentQuestionIndex;
+            
+            const newTeam = typeof hostState.currentTeam === 'number' && 
+                (hostState.currentTeam === 1 || hostState.currentTeam === 2) ? 
+                hostState.currentTeam : this.currentTeam;
+            
+            const newTeam1Score = typeof hostState.team1Score === 'number' && 
+                hostState.team1Score >= 0 ? hostState.team1Score : this.team1Score;
+            
+            const newTeam2Score = typeof hostState.team2Score === 'number' && 
+                hostState.team2Score >= 0 ? hostState.team2Score : this.team2Score;
+            
+            const newStrikes = typeof hostState.strikes === 'number' && 
+                hostState.strikes >= 0 && hostState.strikes <= 3 ? 
+                hostState.strikes : this.strikes;
+            
+            const newAnswersFound = Array.isArray(hostState.answersFound) ? 
+                hostState.answersFound.filter(index => 
+                    typeof index === 'number' && index >= 0 && index < this.questions[this.currentQuestionIndex]?.answers?.length
+                ) : this.answersFound;
+            
+            const newGameActive = typeof hostState.gameActive === 'boolean' ? 
+                hostState.gameActive : this.gameActive;
+            
+            // Update state
+            this.currentQuestionIndex = newQuestionIndex;
+            this.currentTeam = newTeam;
+            this.team1Score = newTeam1Score;
+            this.team2Score = newTeam2Score;
+            this.strikes = newStrikes;
+            this.answersFound = newAnswersFound;
+            this.gameActive = newGameActive;
+            
+            // Reload question if changed
+            if (oldQuestion !== this.currentQuestionIndex) {
+                this.loadQuestion();
+            } else {
+                this.updateDisplay();
+            }
+            
+            // Update team display if changed
+            if (oldTeam !== this.currentTeam) {
+                this.currentTeamEl.textContent = `Team ${this.currentTeam}`;
+            }
+        } catch (error) {
+            console.error('Error syncing from host state:', error);
         }
     }
     
@@ -415,64 +494,100 @@ class FamilyFeudGame {
     }
     
     loadQuestion() {
-        // Get next random question
-        this.currentQuestionIndex = this.getNextQuestion();
-        
-        const currentQuestion = this.questions[this.currentQuestionIndex];
-        this.questionText.textContent = currentQuestion.question;
-        this.totalAnswersEl.textContent = currentQuestion.answers.length;
-        this.answersFoundEl.textContent = '0';
-        
-        this.answersFound = [];
-        this.strikes = 0;
-        this.gameActive = true;
-        
-        this.resetAnswerSlots();
-        this.resetStrikes();
-        this.answerInput.value = '';
-        this.answerInput.focus();
-        
-        this.updateDisplay();
-        this.broadcastGameState();
+        try {
+            // Get next random question
+            this.currentQuestionIndex = this.getNextQuestion();
+            
+            const currentQuestion = this.questions[this.currentQuestionIndex];
+            
+            // Validate question data
+            if (!currentQuestion || !currentQuestion.question || !Array.isArray(currentQuestion.answers)) {
+                throw new Error('Invalid question data loaded');
+            }
+            
+            this.questionText.textContent = currentQuestion.question;
+            this.totalAnswersEl.textContent = currentQuestion.answers.length;
+            this.answersFoundEl.textContent = '0';
+            
+            this.answersFound = [];
+            this.strikes = 0;
+            this.gameActive = true;
+            
+            this.resetAnswerSlots();
+            this.resetStrikes();
+            this.answerInput.value = '';
+            this.answerInput.focus();
+            
+            this.updateDisplay();
+            this.broadcastGameState();
+        } catch (error) {
+            console.error('Error loading question:', error);
+            // Show error to user
+            this.questionText.textContent = 'Error loading question. Please try again.';
+            this.gameActive = false;
+            
+            // Try to recover after a delay
+            setTimeout(() => {
+                try {
+                    this.newGame();
+                } catch (e) {
+                    console.error('Failed to recover from question loading error:', e);
+                }
+            }, 2000);
+        }
     }
     
     updateDisplay() {
         const currentQuestion = this.questions[this.currentQuestionIndex];
         
-        // Update score displays
-        this.team1ScoreEl.textContent = this.team1Score;
-        this.team2ScoreEl.textContent = this.team2Score;
+        // Update score displays with null checks
+        if (this.team1ScoreEl) {
+            this.team1ScoreEl.textContent = this.team1Score;
+        }
+        if (this.team2ScoreEl) {
+            this.team2ScoreEl.textContent = this.team2Score;
+        }
         
         // Update answers found
-        this.answersFoundEl.textContent = this.answersFound.length;
+        if (this.answersFoundEl) {
+            this.answersFoundEl.textContent = this.answersFound.length;
+        }
         
-        // Update strikes
-        this.strikeElements.forEach((strike, index) => {
-            if (index < this.strikes) {
-                strike.classList.add('active');
-            } else {
-                strike.classList.remove('active');
-            }
-        });
+        // Update strikes with null checks
+        if (this.strikeElements && this.strikeElements.length > 0) {
+            this.strikeElements.forEach((strike, index) => {
+                if (strike) {
+                    if (index < this.strikes) {
+                        strike.classList.add('active');
+                    } else {
+                        strike.classList.remove('active');
+                    }
+                }
+            });
+        }
         
-        // Update answer panels
-        this.answerSlots.forEach((slot, index) => {
-            const panel = document.getElementById(`panel-${index + 1}`);
-            const isRevealed = this.answersFound.includes(index);
-            
-            if (isRevealed) {
-                const answer = currentQuestion.answers[index];
-                const answerBack = panel.querySelector('.answer-back');
-                const answerText = answerBack.querySelector('.answer-text');
-                const answerPoints = answerBack.querySelector('.answer-points');
+        // Update answer panels with null checks
+        if (this.answerSlots && this.answerSlots.length > 0) {
+            this.answerSlots.forEach((slot, index) => {
+                const panel = document.getElementById(`panel-${index + 1}`);
+                if (!panel) return;
                 
-                answerText.textContent = answer.text;
-                answerPoints.textContent = answer.points;
-                panel.classList.add('flipped');
-            } else {
-                panel.classList.remove('flipped');
-            }
-        });
+                const isRevealed = this.answersFound.includes(index);
+                
+                if (isRevealed) {
+                    const answer = currentQuestion.answers[index];
+                    const answerBack = panel.querySelector('.answer-back');
+                    const answerText = answerBack?.querySelector('.answer-text');
+                    const answerPoints = answerBack?.querySelector('.answer-points');
+                    
+                    if (answerText) answerText.textContent = answer.text;
+                    if (answerPoints) answerPoints.textContent = answer.points;
+                    panel.classList.add('flipped');
+                } else {
+                    panel.classList.remove('flipped');
+                }
+            });
+        }
     }
     
     resetAnswerSlots() {
@@ -499,6 +614,86 @@ class FamilyFeudGame {
         });
     }
     
+    // Input validation and sanitization
+    sanitizeInput(input) {
+        if (typeof input !== 'string') {
+            return '';
+        }
+        
+        // Remove HTML tags and entities
+        return input
+            .replace(/<[^>]*>/g, '')
+            .replace(/&[a-zA-Z0-9#]+;/g, '')
+            .trim();
+    }
+    
+    validateAnswer(userAnswer) {
+        if (!userAnswer || typeof userAnswer !== 'string') {
+            return false;
+        }
+        
+        const sanitized = this.sanitizeInput(userAnswer);
+        
+        // Check minimum length
+        if (sanitized.length < 1) {
+            return false;
+        }
+        
+        // Check maximum length
+        if (sanitized.length > 50) {
+            return false;
+        }
+        
+        // Check for reasonable content (at least one alphanumeric character)
+        if (!/[a-zA-Z0-9]/.test(sanitized)) {
+            return false;
+        }
+        
+        return sanitized;
+    }
+    
+    // Improved answer matching with better validation
+    isAnswerMatch(userAnswer, correctAnswer) {
+        const sanitizedUser = this.validateAnswer(userAnswer);
+        const sanitizedCorrect = this.validateAnswer(correctAnswer);
+        
+        if (!sanitizedUser || !sanitizedCorrect) {
+            return false;
+        }
+        
+        const userLower = sanitizedUser.toLowerCase();
+        const correctLower = sanitizedCorrect.toLowerCase();
+        
+        // Exact match
+        if (userLower === correctLower) {
+            return true;
+        }
+        
+        // Check if user answer contains the correct answer or vice versa
+        // but with minimum length requirements to prevent false matches
+        if (userLower.includes(correctLower) && correctLower.length >= 3) {
+            return true;
+        }
+        
+        if (correctLower.includes(userLower) && userLower.length >= 3) {
+            return true;
+        }
+        
+        // Check for word-level matches
+        const userWords = userLower.split(/\s+/).filter(word => word.length >= 2);
+        const correctWords = correctLower.split(/\s+/).filter(word => word.length >= 2);
+        
+        // If at least 50% of words match and user provided substantial input
+        if (userWords.length >= 2 && correctWords.length >= 2) {
+            const matches = userWords.filter(word => correctWords.includes(word));
+            if (matches.length >= Math.max(1, Math.floor(correctWords.length * 0.5))) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
     submitAnswer() {
         if (!this.gameActive) return;
         
@@ -510,9 +705,8 @@ class FamilyFeudGame {
         
         for (let i = 0; i < currentQuestion.answers.length; i++) {
             const answer = currentQuestion.answers[i];
-            const answerText = answer.text.toLowerCase();
             
-            if (answerText.includes(userAnswer) || userAnswer.includes(answerText)) {
+            if (this.isAnswerMatch(userAnswer, answer.text)) {
                 if (!this.answersFound.includes(i)) {
                     this.revealAnswer(i, answer);
                     this.answersFound.push(i);
