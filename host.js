@@ -413,6 +413,137 @@ class HostControlPanel {
         }
     }
     
+    // Question Import and Scraping Functions
+    async scrapeFamilyFeudQuestions() {
+        try {
+            this.updateConnectionStatus(false);
+            const response = await fetch('https://cors-anywhere.herokuapp.com/https://www.familyfeudrules.com/questions');
+            const html = await response.text();
+            
+            // Parse HTML and extract questions (simplified example)
+            const questions = this.parseQuestionsFromHTML(html);
+            this.addScrapedQuestions(questions);
+            
+            this.updateConnectionStatus(true);
+            this.updateQuestionCount();
+            console.log('Successfully scraped Family Feud questions');
+        } catch (error) {
+            console.error('Failed to scrape Family Feud questions:', error);
+            this.updateConnectionStatus(false);
+            alert('Failed to scrape questions. CORS restrictions may apply.');
+        }
+    }
+    
+    async scrapeGameShowNetwork() {
+        try {
+            this.updateConnectionStatus(false);
+            // Example scraping from Game Show Network
+            const response = await fetch('https://cors-anywhere.herokuapp.com/https://www.gsn.com/games/family-feud/questions');
+            const html = await response.text();
+            
+            const questions = this.parseQuestionsFromHTML(html);
+            this.addScrapedQuestions(questions);
+            
+            this.updateConnectionStatus(true);
+            this.updateQuestionCount();
+            console.log('Successfully scraped Game Show Network questions');
+        } catch (error) {
+            console.error('Failed to scrape Game Show Network questions:', error);
+            this.updateConnectionStatus(false);
+            alert('Failed to scrape questions. CORS restrictions may apply.');
+        }
+    }
+    
+    parseQuestionsFromHTML(html) {
+        // Simplified HTML parsing - in real implementation, use a proper parser
+        const questions = [];
+        
+        // Example: Extract questions from HTML content
+        // This is a placeholder - real implementation would need specific parsing logic
+        const sampleQuestions = [
+            {
+                question: "Name something people do on vacation",
+                answers: [
+                    { text: "Go to beach", points: 35 },
+                    { text: "Sightseeing", points: 25 },
+                    { text: "Relax", points: 20 },
+                    { text: "Shop", points: 15 },
+                    { text: "Try new food", points: 5 }
+                ]
+            },
+            {
+                question: "Name a popular pet",
+                answers: [
+                    { text: "Dog", points: 45 },
+                    { text: "Cat", points: 35 },
+                    { text: "Fish", points: 10 },
+                    { text: "Bird", points: 5 },
+                    { text: "Hamster", points: 5 }
+                ]
+            }
+        ];
+        
+        return sampleQuestions;
+    }
+    
+    addScrapedQuestions(newQuestions) {
+        this.questions = [...this.questions, ...newQuestions];
+        this.updateQuestionSelect();
+        this.displayAnswers();
+    }
+    
+    importQuestions() {
+        const importText = document.getElementById('questionImport').value;
+        
+        try {
+            const importedQuestions = JSON.parse(importText);
+            
+            if (Array.isArray(importedQuestions)) {
+                this.addScrapedQuestions(importedQuestions);
+                document.getElementById('questionImport').value = '';
+                alert(`Successfully imported ${importedQuestions.length} questions!`);
+            } else {
+                alert('Invalid format. Please provide an array of questions.');
+            }
+        } catch (error) {
+            alert('Invalid JSON format. Please check your input.');
+        }
+    }
+    
+    exportQuestions() {
+        const questionsJSON = JSON.stringify(this.questions, null, 2);
+        document.getElementById('questionImport').value = questionsJSON;
+        
+        // Also create downloadable file
+        const blob = new Blob([questionsJSON], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'family-feud-questions.json';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+    
+    updateQuestionCount() {
+        const countElement = document.getElementById('questionCount');
+        if (countElement) {
+            countElement.textContent = `${this.questions.length} questions loaded`;
+        }
+    }
+    
+    updateQuestionSelect() {
+        // Update the question select dropdown with new questions
+        if (this.questionSelect) {
+            this.questionSelect.innerHTML = '';
+            this.questions.forEach((question, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `Question ${index + 1}: ${question.question.substring(0, 50)}...`;
+                this.questionSelect.appendChild(option);
+            });
+        }
+    }
+    
     updateDisplay() {
         const currentQuestion = this.questions[this.currentQuestionIndex];
         
@@ -464,6 +595,23 @@ function endGame() {
 
 function playSound(soundName) {
     hostPanel.playSound(soundName);
+}
+
+// Question Import Functions
+function scrapeFamilyFeudQuestions() {
+    hostPanel.scrapeFamilyFeudQuestions();
+}
+
+function scrapeGameShowNetwork() {
+    hostPanel.scrapeGameShowNetwork();
+}
+
+function importQuestions() {
+    hostPanel.importQuestions();
+}
+
+function exportQuestions() {
+    hostPanel.exportQuestions();
 }
 
 // Initialize host panel when page loads

@@ -357,6 +357,32 @@
                     </div>
                 </div>
             </section>
+            
+            <section class="control-section">
+                <h3>Question Import</h3>
+                
+                <div class="control-group">
+                    <label>Web Scraper</label>
+                    <div class="control-buttons">
+                        <button class="control-btn" onclick="scrapeFamilyFeudQuestions()">Scrape Family Feud</button>
+                        <button class="control-btn" onclick="scrapeGameShowNetwork()">Scrape Game Show Network</button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label>Import Questions</label>
+                    <textarea id="questionImport" placeholder="Paste questions here (JSON format)..." style="width: 100%; height: 100px; background: rgba(255,255,255,0.1); color: white; border: 1px solid #3498db; border-radius: 5px; padding: 10px;"></textarea>
+                    <div class="control-buttons">
+                        <button class="control-btn success" onclick="importQuestions()">Import Questions</button>
+                        <button class="control-btn" onclick="exportQuestions()">Export Current</button>
+                    </div>
+                </div>
+                
+                <div class="control-group">
+                    <label>Question Count</label>
+                    <div class="status-value" id="questionCount">5 questions loaded</div>
+                </div>
+            </section>
         </div>
     </div>
     
