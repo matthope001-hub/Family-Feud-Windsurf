@@ -101,8 +101,27 @@
             color: #ffd700;
         }
         
-        .volume-slider {
-            width: 100px;
+        .audio-test-buttons {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .audio-test-buttons .audio-btn {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            background: rgba(255, 215, 0, 0.3);
+            border: 1px solid #ffd700;
+            color: #ffd700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .audio-test-buttons .audio-btn:hover {
+            background: rgba(255, 215, 0, 0.5);
         }
         
         .family-logo {
@@ -269,15 +288,19 @@
                 themeAudio.volume = 0.7;
                 themeAudio.play().catch(e => {
                     console.log('Theme play failed:', e);
-                    updateStatus('Theme play failed', '❌');
+                    updateStatus('Theme play failed, trying direct...', '🔧');
+                    // Try direct play as fallback
+                    testAudio.play().catch(e2 => {
+                        console.log('Direct play also failed:', e2);
+                        updateStatus('Harvey theme unavailable', '❌');
+                    });
                 });
             });
             
             testAudio.addEventListener('error', (e) => {
                 console.log('❌ Harvey Era audio file error:', e);
-                updateStatus('Harvey Failed - Using Generated', '🎹');
+                updateStatus('Harvey theme file not found', '❌');
                 testAudioElements.delete(testAudio);
-                playGeneratedTheme();
             });
             
             // Try to load and test
@@ -377,6 +400,25 @@
             }
         }
 
+        function testAudioDirectly() {
+            updateStatus('Testing direct audio...', '🔧');
+            
+            try {
+                // Test if we can play the main theme audio directly
+                themeAudio.volume = 0.7;
+                themeAudio.play().then(() => {
+                    updateStatus('Direct audio playing! 🎵', '✅');
+                }).catch((e) => {
+                    console.log('Direct audio failed:', e);
+                    updateStatus('Direct audio failed, trying generated...', '🎹');
+                    playGeneratedTheme();
+                });
+            } catch (e) {
+                console.log('Error in testAudioDirectly:', e);
+                updateStatus('Audio test failed', '❌');
+            }
+        }
+        
         function stopTheme() {
             themeAudio.pause();
             themeAudio.currentTime = 0;
@@ -395,107 +437,18 @@
         window.addEventListener('load', function() {
             updateStatus('Initializing audio system...', '⏳');
             
-            // Create and trigger a user interaction immediately
-            function triggerUserInteraction() {
-                try {
-                    // Create a real user interaction that browsers accept
-                    const event = new MouseEvent('click', {
-                        bubbles: true,
-                        cancelable: true,
-                        view: window
-                    });
-                    
-                    // Create audio context and ensure it's properly initialized
-                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                    
-                    // Create and play a silent sound to initialize the context
-                    const silentOscillator = audioContext.createOscillator();
-                    const silentGain = audioContext.createGain();
-                    silentOscillator.connect(silentGain);
-                    silentGain.connect(audioContext.destination);
-                    
-                    // Track for cleanup
-                    activeOscillators.add(silentOscillator);
-                    
-                    silentOscillator.start();
-                    silentOscillator.stop(audioContext.currentTime + 0.1);
-                    
-                    // Remove from tracking when stopped
-                    silentOscillator.addEventListener('ended', () => {
-                        activeOscillators.delete(silentOscillator);
-                    });
-                    
-                    // Dispatch the click event to simulate user interaction
-                    document.dispatchEvent(event);
-                    
-                    // Wait a moment for context to be ready
-                    setTimeout(() => {
-                        // Try Harvey Era theme with properly initialized context
-                        console.log('Attempting to play Harvey Era theme with ready context...');
-                        const testAudio = new Audio('sounds/family-feud-theme-harvey.mp3');
-                        testAudio.volume = 0.7;
-                        testAudioElements.add(testAudio);
-                        
-                        testAudio.addEventListener('canplaythrough', () => {
-                            console.log('✅ Harvey Era audio file can play through');
-                            updateStatus('Auto-playing Harvey Era Family Feud Theme', '🎵');
-                            
-                            // Resume audio context if needed
-                            if (audioContext.state === 'suspended') {
-                                audioContext.resume().catch(e => {
-                                    console.log('Audio context resume failed:', e);
-                                });
-                            }
-                            
-                            // Use the main themeAudio element for continuous play
-                            themeAudio.src = 'sounds/family-feud-theme-harvey.mp3';
-                            themeAudio.volume = 0.7;
-                            themeAudio.play().catch(e => {
-                                console.log('Theme play failed:', e);
-                                updateStatus('Theme play failed', '❌');
-                            });
-                        });
-                        
-                        testAudio.addEventListener('error', (e) => {
-                            console.log('❌ Harvey Era failed, trying 101Soundboards:', e);
-                            updateStatus('Trying 101Soundboards Theme', '🎼');
-                            testAudioElements.delete(testAudio);
-                            
-                            const testAudio2 = new Audio('sounds/family-feud-theme-101soundboards.mp3');
-                            testAudio2.volume = 0.7;
-                            testAudioElements.add(testAudio2);
-                            
-                            testAudio2.addEventListener('canplaythrough', () => {
-                                console.log('✅ 101Soundboards audio file can play through');
-                                updateStatus('Auto-playing 101Soundboards Theme', '🎼');
-                                themeAudio.src = 'sounds/family-feud-theme-101soundboards.mp3';
-                                themeAudio.volume = 0.7;
-                                themeAudio.play().catch(e => {
-                                    console.log('Theme play failed:', e);
-                                    updateStatus('Theme play failed', '❌');
-                                });
-                            });
-                            
-                            testAudio2.addEventListener('error', (e) => {
-                                console.log('❌ Both MP3s failed, using generated theme:', e);
-                                updateStatus('Auto-playing Generated Theme', '🎹');
-                                testAudioElements.delete(testAudio2);
-                                playGeneratedTheme();
-                            });
-                            
-                            testAudio2.load();
-                        });
-                        
-                        testAudio.load();
-                    }, 200);
-                } catch (e) {
-                    console.log('Error in triggerUserInteraction:', e);
-                    updateStatus('Auto-play failed', '❌');
-                }
-            }
+            // Simple approach: wait for user interaction, then play
+            setTimeout(() => {
+                updateStatus('🔇 Click anywhere to play theme music');
+            }, 1000);
             
-            // Trigger interaction immediately to bypass autoplay restrictions
-            setTimeout(triggerUserInteraction, 100);
+            // Add a one-time click listener to start the theme
+            document.addEventListener('click', function playThemeOnClick() {
+                updateStatus('Starting theme music...', '🎵');
+                testAudioDirectly();
+                // Remove the listener after first click
+                document.removeEventListener('click', playThemeOnClick);
+            }, { once: true });
         });
     </script>
 </body>

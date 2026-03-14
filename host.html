@@ -125,20 +125,6 @@
             background: #e67e22;
         }
         
-        .answers-preview {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 25px;
-            border-radius: 15px;
-            border: 2px solid #27ae60;
-            margin-bottom: 30px;
-        }
-        
-        .answers-preview h3 {
-            color: #27ae60;
-            margin-bottom: 20px;
-            font-size: 1.5rem;
-        }
-        
         .answer-list {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -316,13 +302,6 @@
             </div>
         </section>
         
-        <section class="answers-preview">
-            <h3>Current Answers (Host View)</h3>
-            <div class="answer-list" id="answersList">
-                <!-- Answers will be populated here -->
-            </div>
-        </section>
-        
         <div class="control-panel">
             <section class="control-section">
                 <h3>Game Controls</h3>
@@ -365,16 +344,6 @@
                     <label>Reveal Answers Manually</label>
                     <div class="answer-list" id="manualAnswersList">
                         <!-- Manual reveal buttons will be populated here -->
-                    </div>
-                </div>
-                
-                <div class="control-group">
-                    <label>Score Management</label>
-                    <div class="control-buttons">
-                        <button class="control-btn" onclick="addPoints(1, 10)">Team 1 +10</button>
-                        <button class="control-btn" onclick="addPoints(2, 10)">Team 2 +10</button>
-                        <button class="control-btn" onclick="addPoints(1, 50)">Team 1 +50</button>
-                        <button class="control-btn" onclick="addPoints(2, 50)">Team 2 +50</button>
                     </div>
                 </div>
                 
