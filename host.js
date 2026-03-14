@@ -556,6 +556,39 @@ class HostControlPanel {
         
         this.questionSelect.value = this.currentQuestionIndex;
     }
+    
+    // Fast Money Methods for Host Panel
+    startFastMoneyRound() {
+        // Signal to main game that Fast Money is starting
+        this.broadcastGameState();
+        
+        // Update connection status to show Fast Money mode
+        this.connectionStatus.textContent = 'Fast Money Mode';
+        this.connectionStatus.className = 'connection-status connected';
+        
+        // Play start sound
+        this.playSound('theme');
+    }
+    
+    revealFastMoneyAnswer() {
+        // This would typically reveal answers one by one in a real implementation
+        // For now, just play a sound effect
+        this.playSound('yes');
+    }
+    
+    resetFastMoneyRound() {
+        // Reset Fast Money state
+        this.fastMoneyRound = 0;
+        this.fastMoneyPlayer1Score = 0;
+        this.fastMoneyPlayer2Score = 0;
+        
+        // Update connection status
+        this.connectionStatus.textContent = 'Connected';
+        this.connectionStatus.className = 'connection-status connected';
+        
+        // Broadcast reset
+        this.broadcastGameState();
+    }
 }
 
 // Global functions for button onclick handlers
@@ -612,6 +645,19 @@ function importQuestions() {
 
 function exportQuestions() {
     hostPanel.exportQuestions();
+}
+
+// Fast Money Functions
+function startFastMoney() {
+    hostPanel.startFastMoneyRound();
+}
+
+function revealFastMoneyAnswer() {
+    hostPanel.revealFastMoneyAnswer();
+}
+
+function resetFastMoney() {
+    hostPanel.resetFastMoneyRound();
 }
 
 // Initialize host panel when page loads

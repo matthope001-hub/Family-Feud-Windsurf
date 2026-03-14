@@ -248,6 +248,140 @@ class FamilyFeudGame {
             }
         ];
         
+        // Fast Money questions - 5 questions per round
+        this.fastMoneyQuestions = [
+            {
+                question: "Name something you might find in a woman's purse",
+                answers: [
+                    { text: "Wallet", points: 35 },
+                    { text: "Keys", points: 25 },
+                    { text: "Phone", points: 20 },
+                    { text: "Lipstick", points: 10 },
+                    { text: "Makeup", points: 8 },
+                    { text: "Gum", points: 5 },
+                    { text: "Pen", points: 3 },
+                    { text: "Tissues", points: 2 }
+                ]
+            },
+            {
+                question: "Name something people do when they can't sleep",
+                answers: [
+                    { text: "Read", points: 30 },
+                    { text: "Watch TV", points: 25 },
+                    { text: "Count sheep", points: 20 },
+                    { text: "Get up", points: 15 },
+                    { text: "Drink warm milk", points: 8 },
+                    { text: "Listen to music", points: 5 },
+                    { text: "Meditate", points: 4 },
+                    { text: "Take medicine", points: 3 }
+                ]
+            },
+            {
+                question: "Name something you might see at a baseball game",
+                answers: [
+                    { text: "Popcorn", points: 35 },
+                    { text: "Peanuts", points: 30 },
+                    { text: "Hot dogs", points: 25 },
+                    { text: "Beer", points: 15 },
+                    { text: "Scoreboard", points: 10 },
+                    { text: "Mascot", points: 8 },
+                    { text: "Fans", points: 5 },
+                    { text: "Players", points: 3 }
+                ]
+            },
+            {
+                question: "Name something you might find in a kitchen drawer",
+                answers: [
+                    { text: "Spoons", points: 30 },
+                    { text: "Forks", points: 25 },
+                    { text: "Knives", points: 20 },
+                    { text: "Utensils", points: 15 },
+                    { text: "Junk drawer", points: 10 },
+                    { text: "Batteries", points: 8 },
+                    { text: "Rubber bands", points: 5 },
+                    { text: "Tape", points: 3 }
+                ]
+            },
+            {
+                question: "Name something people do on Sunday morning",
+                answers: [
+                    { text: "Church", points: 35 },
+                    { text: "Sleep in", points: 30 },
+                    { text: "Read paper", points: 20 },
+                    { text: "Breakfast", points: 15 },
+                    { text: "Watch TV", points: 10 },
+                    { text: "Exercise", points: 8 },
+                    { text: "Yard work", points: 5 },
+                    { text: "Family time", points: 3 }
+                ]
+            },
+            {
+                question: "Name something you might find in a garage",
+                answers: [
+                    { text: "Car", points: 40 },
+                    { text: "Tools", points: 25 },
+                    { text: "Lawn mower", points: 20 },
+                    { text: "Bikes", points: 15 },
+                    { text: "Boxes", points: 10 },
+                    { text: "Workbench", points: 8 },
+                    { text: "Sports equipment", points: 5 },
+                    { text: "Old stuff", points: 3 }
+                ]
+            },
+            {
+                question: "Name something people wear to keep warm",
+                answers: [
+                    { text: "Coat", points: 35 },
+                    { text: "Sweater", points: 30 },
+                    { text: "Hat", points: 20 },
+                    { text: "Gloves", points: 15 },
+                    { text: "Scarf", points: 10 },
+                    { text: "Boots", points: 8 },
+                    { text: "Blanket", points: 5 },
+                    { text: "Socks", points: 3 }
+                ]
+            },
+            {
+                question: "Name something you might find on a restaurant table",
+                answers: [
+                    { text: "Salt/pepper", points: 35 },
+                    { text: "Napkins", points: 25 },
+                    { text: "Menu", points: 20 },
+                    { text: "Silverware", points: 15 },
+                    { text: "Ketchup", points: 10 },
+                    { text: "Sugar", points: 8 },
+                    { text: "Flowers", points: 5 },
+                    { text: "Water glasses", points: 3 }
+                ]
+            },
+            {
+                question: "Name something people do when they're happy",
+                answers: [
+                    { text: "Smile", points: 40 },
+                    { text: "Laugh", points: 30 },
+                    { text: "Sing", points: 20 },
+                    { text: "Dance", points: 15 },
+                    { text: "Celebrate", points: 10 },
+                    { text: "Tell others", points: 8 },
+                    { text: "Jump", points: 5 },
+                    { text: "Hug someone", points: 3 }
+                ]
+            },
+            {
+                question: "Name something you might find in a classroom",
+                answers: [
+                    { text: "Desks", points: 35 },
+                    { text: "Books", points: 25 },
+                    { text: "Chairs", points: 20 },
+                    { text: "Blackboard", points: 15 },
+                    { text: "Teacher", points: 10 },
+                    { text: "Students", points: 8 },
+                    { text: "Pencils", points: 5 },
+                    { text: "Posters", points: 3 }
+                ]
+            }
+        ];
+        
         this.currentQuestionIndex = 0;
         this.currentTeam = 1;
         this.team1Score = 0;
@@ -257,6 +391,18 @@ class FamilyFeudGame {
         this.gameActive = true;
         this.faceOffMode = true;
         this.stealMode = false;
+        
+        // Fast Money state
+        this.fastMoneyMode = false;
+        this.fastMoneyRound = 0;
+        this.fastMoneyQuestionsSet = [];
+        this.fastMoneyPlayer1Answers = [];
+        this.fastMoneyPlayer2Answers = [];
+        this.fastMoneyPlayer1Score = 0;
+        this.fastMoneyPlayer2Score = 0;
+        this.fastMoneyTimer = null;
+        this.fastMoneyTimeLeft = 60;
+        this.fastMoneyActive = false;
         
         // Initialize question randomization
         this.usedQuestions = [];
@@ -387,6 +533,36 @@ class FamilyFeudGame {
         this.resultDetails = document.getElementById('result-details');
         this.continueBtn = document.getElementById('continue-btn');
         
+        // Fast Money elements
+        this.fastMoneySection = document.getElementById('fastMoney');
+        this.timerDisplay = document.getElementById('timer');
+        this.timerFill = document.getElementById('timerFill');
+        this.startFastMoneyBtn = document.getElementById('start-fast-money');
+        this.submitFastMoneyBtn = document.getElementById('submit-fast-money');
+        this.revealAnswersBtn = document.getElementById('reveal-answers');
+        this.fastMoneyResults = document.getElementById('fastMoneyResults');
+        this.answerReveals = document.getElementById('answerReveals');
+        this.fastMoneyContinueBtn = document.getElementById('fast-money-continue');
+        
+        // Fast Money question and answer elements
+        this.fastMoneyQuestionElements = [];
+        this.fastMoneyAnswerElements = [];
+        for (let i = 1; i <= 5; i++) {
+            this.fastMoneyQuestionElements.push(document.getElementById(`question-${i}`));
+            this.fastMoneyAnswerElements.push(document.getElementById(`answer-${i}`));
+        }
+        
+        // Fast Money score elements
+        this.playerNameEl = document.getElementById('player-name');
+        this.playerScoreEl = document.getElementById('player-score');
+        this.player2ScoreSection = document.getElementById('player2-score-section');
+        this.player2ScoreEl = document.getElementById('player2-score');
+        this.fastMoneyResultMessage = document.getElementById('fast-money-result-message');
+        this.finalPlayerName = document.getElementById('final-player-name');
+        this.finalPlayerScore = document.getElementById('final-player-score');
+        this.finalPlayer2Score = document.getElementById('final-player2-score');
+        this.finalPlayer2ScoreRow = document.getElementById('final-player2-score-row');
+        
         // Validate critical DOM elements
         if (!this.questionText || !this.answerInput || !this.submitBtn) {
             console.error('Critical game elements not found in DOM');
@@ -511,6 +687,26 @@ class FamilyFeudGame {
         this.nextQuestionBtn.addEventListener('click', () => this.nextQuestion());
         this.strikeBtn.addEventListener('click', () => this.addStrike());
         this.continueBtn.addEventListener('click', () => this.hideRoundResult());
+        
+        // Fast Money events
+        this.startFastMoneyBtn.addEventListener('click', () => this.startFastMoney());
+        this.submitFastMoneyBtn.addEventListener('click', () => this.submitFastMoneyAnswers());
+        this.revealAnswersBtn.addEventListener('click', () => this.revealFastMoneyAnswers());
+        this.fastMoneyContinueBtn.addEventListener('click', () => this.hideFastMoneyResults());
+        
+        // Fast Money input events
+        this.fastMoneyAnswerElements.forEach((input, index) => {
+            input.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter' && this.fastMoneyActive) {
+                    // Focus next input or submit if last
+                    if (index < this.fastMoneyAnswerElements.length - 1) {
+                        this.fastMoneyAnswerElements[index + 1].focus();
+                    } else {
+                        this.submitFastMoneyAnswers();
+                    }
+                }
+            });
+        });
     }
     
     loadQuestion() {
@@ -749,6 +945,9 @@ class FamilyFeudGame {
                         this.endRound(true);
                     }
                     
+                    // Check for Fast Money opportunity after scoring
+                    this.checkForFastMoney();
+                    
                     break;
                 }
             }
@@ -906,6 +1105,322 @@ class FamilyFeudGame {
         };
         
         this.broadcastGameState();
+    }
+    
+    // Fast Money Methods
+    checkForFastMoney() {
+        // Check if any team has 200+ points to trigger Fast Money
+        if (this.team1Score >= 200 || this.team2Score >= 200) {
+            this.showFastMoneyOption();
+        }
+    }
+    
+    showFastMoneyOption() {
+        const message = this.team1Score >= 200 ? 
+            'Team 1 has reached 200+ points! Ready for Fast Money?' :
+            'Team 2 has reached 200+ points! Ready for Fast Money?';
+        
+        this.resultMessage.textContent = 'Fast Money Time!';
+        this.resultDetails.textContent = message;
+        this.roundResult.style.display = 'flex';
+        
+        // Modify continue button to start Fast Money
+        this.continueBtn.textContent = 'Start Fast Money';
+        this.continueBtn.onclick = () => {
+            this.hideRoundResult();
+            this.initializeFastMoney();
+        };
+    }
+    
+    initializeFastMoney() {
+        this.fastMoneyMode = true;
+        this.fastMoneyRound = 1;
+        this.fastMoneyPlayer1Answers = [];
+        this.fastMoneyPlayer2Answers = [];
+        this.fastMoneyPlayer1Score = 0;
+        this.fastMoneyPlayer2Score = 0;
+        
+        // Select 5 random Fast Money questions
+        this.fastMoneyQuestionsSet = this.getRandomFastMoneyQuestions();
+        
+        // Hide main game, show Fast Money
+        document.querySelector('.game-main').style.display = 'none';
+        document.querySelector('.controls-section').style.display = 'none';
+        this.fastMoneySection.style.display = 'block';
+        
+        // Setup first player
+        this.setupFastMoneyPlayer();
+    }
+    
+    getRandomFastMoneyQuestions() {
+        const shuffled = [...this.fastMoneyQuestions].sort(() => Math.random() - 0.5);
+        return shuffled.slice(0, 5);
+    }
+    
+    setupFastMoneyPlayer() {
+        const playerName = this.fastMoneyRound === 1 ? 'Player 1' : 'Player 2';
+        this.playerNameEl.textContent = playerName;
+        this.finalPlayerName.textContent = playerName + ': ';
+        
+        // Show questions
+        this.fastMoneyQuestionElements.forEach((element, index) => {
+            element.textContent = this.fastMoneyQuestionsSet[index].question;
+        });
+        
+        // Clear answers
+        this.fastMoneyAnswerElements.forEach(input => {
+            input.value = '';
+            input.disabled = true;
+        });
+        
+        // Reset timer
+        this.fastMoneyTimeLeft = 60;
+        this.timerDisplay.textContent = '60';
+        this.timerFill.style.width = '100%';
+        
+        // Show/hide appropriate elements
+        this.startFastMoneyBtn.style.display = 'inline-block';
+        this.submitFastMoneyBtn.style.display = 'none';
+        this.revealAnswersBtn.style.display = 'none';
+        this.fastMoneyResults.style.display = 'none';
+        
+        if (this.fastMoneyRound === 2) {
+            this.player2ScoreSection.style.display = 'block';
+            this.finalPlayer2ScoreRow.style.display = 'block';
+        }
+    }
+    
+    startFastMoney() {
+        this.fastMoneyActive = true;
+        this.startFastMoneyBtn.style.display = 'none';
+        this.submitFastMoneyBtn.style.display = 'inline-block';
+        
+        // Enable answer inputs
+        this.fastMoneyAnswerElements.forEach(input => {
+            input.disabled = false;
+            input.value = '';
+        });
+        
+        // Focus first input
+        this.fastMoneyAnswerElements[0].focus();
+        
+        // Start timer
+        this.startFastMoneyTimer();
+        
+        // Play start sound
+        this.playSound('theme');
+    }
+    
+    startFastMoneyTimer() {
+        this.fastMoneyTimer = setInterval(() => {
+            this.fastMoneyTimeLeft--;
+            this.timerDisplay.textContent = this.fastMoneyTimeLeft;
+            
+            // Update timer bar
+            const percentage = (this.fastMoneyTimeLeft / 60) * 100;
+            this.timerFill.style.width = percentage + '%';
+            
+            // Change color based on time left
+            if (this.fastMoneyTimeLeft <= 10) {
+                this.timerFill.style.backgroundColor = '#e74c3c';
+            } else if (this.fastMoneyTimeLeft <= 30) {
+                this.timerFill.style.backgroundColor = '#f39c12';
+            }
+            
+            if (this.fastMoneyTimeLeft <= 0) {
+                this.stopFastMoneyTimer();
+                this.submitFastMoneyAnswers();
+            }
+        }, 1000);
+    }
+    
+    stopFastMoneyTimer() {
+        if (this.fastMoneyTimer) {
+            clearInterval(this.fastMoneyTimer);
+            this.fastMoneyTimer = null;
+        }
+        this.fastMoneyActive = false;
+    }
+    
+    submitFastMoneyAnswers() {
+        this.stopFastMoneyTimer();
+        
+        // Collect answers
+        const answers = [];
+        this.fastMoneyAnswerElements.forEach(input => {
+            answers.push(input.value.trim());
+        });
+        
+        if (this.fastMoneyRound === 1) {
+            this.fastMoneyPlayer1Answers = answers;
+            this.calculateFastMoneyScore(answers, 1);
+        } else {
+            this.fastMoneyPlayer2Answers = answers;
+            this.calculateFastMoneyScore(answers, 2);
+        }
+        
+        // Disable inputs
+        this.fastMoneyAnswerElements.forEach(input => {
+            input.disabled = true;
+        });
+        
+        this.submitFastMoneyBtn.style.display = 'none';
+        this.revealAnswersBtn.style.display = 'inline-block';
+        
+        // Update score display
+        if (this.fastMoneyRound === 1) {
+            this.playerScoreEl.textContent = this.fastMoneyPlayer1Score;
+        } else {
+            this.player2ScoreEl.textContent = this.fastMoneyPlayer2Score;
+        }
+    }
+    
+    calculateFastMoneyScore(answers, playerNum) {
+        let totalScore = 0;
+        
+        answers.forEach((answer, index) => {
+            if (!answer) return;
+            
+            const question = this.fastMoneyQuestionsSet[index];
+            const matchedAnswer = question.answers.find(qa => 
+                this.isAnswerMatch(answer, qa.text)
+            );
+            
+            if (matchedAnswer) {
+                totalScore += matchedAnswer.points;
+                this.playSound('yes');
+            }
+        });
+        
+        if (playerNum === 1) {
+            this.fastMoneyPlayer1Score = totalScore;
+        } else {
+            this.fastMoneyPlayer2Score = totalScore;
+        }
+    }
+    
+    revealFastMoneyAnswers() {
+        this.revealAnswersBtn.style.display = 'none';
+        
+        // Create answer reveal content
+        this.answerReveals.innerHTML = '';
+        
+        this.fastMoneyQuestionsSet.forEach((question, index) => {
+            const answerDiv = document.createElement('div');
+            answerDiv.className = 'answer-reveal-item';
+            
+            const questionText = document.createElement('div');
+            questionText.className = 'reveal-question';
+            questionText.textContent = `${index + 1}. ${question.question}`;
+            
+            const player1Answer = document.createElement('div');
+            player1Answer.className = 'reveal-answer player1';
+            player1Answer.textContent = `P1: ${this.fastMoneyPlayer1Answers[index] || 'No answer'}`;
+            
+            const correctAnswer = document.createElement('div');
+            correctAnswer.className = 'reveal-correct';
+            
+            // Find the correct answer
+            const player1Match = question.answers.find(qa => 
+                this.fastMoneyPlayer1Answers[index] && 
+                this.isAnswerMatch(this.fastMoneyPlayer1Answers[index], qa.text)
+            );
+            
+            if (player1Match) {
+                correctAnswer.innerHTML = `<span class="correct">✓ ${player1Match.text} (${player1Match.points})</span>`;
+            } else {
+                correctAnswer.innerHTML = `<span class="incorrect">✗ ${question.answers[0].text} (${question.answers[0].points})</span>`;
+            }
+            
+            answerDiv.appendChild(questionText);
+            answerDiv.appendChild(player1Answer);
+            answerDiv.appendChild(correctAnswer);
+            
+            // Add player 2 answer if it exists
+            if (this.fastMoneyRound === 2) {
+                const player2Answer = document.createElement('div');
+                player2Answer.className = 'reveal-answer player2';
+                player2Answer.textContent = `P2: ${this.fastMoneyPlayer2Answers[index] || 'No answer'}`;
+                answerDiv.appendChild(player2Answer);
+                
+                const player2Match = question.answers.find(qa => 
+                    this.fastMoneyPlayer2Answers[index] && 
+                    this.isAnswerMatch(this.fastMoneyPlayer2Answers[index], qa.text)
+                );
+                
+                if (player2Match) {
+                    correctAnswer.innerHTML += ` | <span class="correct">✓ ${player2Match.text} (${player2Match.points})</span>`;
+                } else {
+                    correctAnswer.innerHTML += ` | <span class="incorrect">✗ No match</span>`;
+                }
+            }
+            
+            this.answerReveals.appendChild(answerDiv);
+        });
+        
+        // Show results
+        this.showFastMoneyResults();
+    }
+    
+    showFastMoneyResults() {
+        this.fastMoneyResults.style.display = 'block';
+        
+        const totalScore = this.fastMoneyRound === 1 ? 
+            this.fastMoneyPlayer1Score : 
+            this.fastMoneyPlayer1Score + this.fastMoneyPlayer2Score;
+        
+        if (this.fastMoneyRound === 1) {
+            this.fastMoneyResultMessage.textContent = `Player 1 Score: ${this.fastMoneyPlayer1Score}`;
+            this.finalPlayerScore.textContent = this.fastMoneyPlayer1Score;
+            this.fastMoneyContinueBtn.textContent = 'Player 2 Turn';
+        } else {
+            const combinedScore = this.fastMoneyPlayer1Score + this.fastMoneyPlayer2Score;
+            this.fastMoneyResultMessage.textContent = `Combined Score: ${combinedScore}`;
+            this.finalPlayerScore.textContent = this.fastMoneyPlayer1Score;
+            this.finalPlayer2Score.textContent = this.fastMoneyPlayer2Score;
+            
+            if (combinedScore >= 200) {
+                this.fastMoneyResultMessage.textContent += ' - WINNER!';
+                this.playSound('win');
+            } else {
+                this.fastMoneyResultMessage.textContent += ' - Try Again!';
+            }
+            
+            this.fastMoneyContinueBtn.textContent = 'End Game';
+        }
+    }
+    
+    hideFastMoneyResults() {
+        if (this.fastMoneyRound === 1) {
+            // Start player 2 round
+            this.fastMoneyRound = 2;
+            this.setupFastMoneyPlayer();
+        } else {
+            // End game
+            this.endFastMoneyGame();
+        }
+    }
+    
+    endFastMoneyGame() {
+        this.fastMoneyMode = false;
+        
+        // Show main game, hide Fast Money
+        this.fastMoneySection.style.display = 'none';
+        document.querySelector('.game-main').style.display = 'block';
+        document.querySelector('.controls-section').style.display = 'block';
+        
+        // Add Fast Money scores to team scores
+        const winningTeam = this.team1Score >= 200 ? 1 : 2;
+        const fastMoneyScore = this.fastMoneyPlayer1Score + this.fastMoneyPlayer2Score;
+        
+        if (winningTeam === 1) {
+            this.team1Score += fastMoneyScore;
+        } else {
+            this.team2Score += fastMoneyScore;
+        }
+        
+        this.updateDisplay();
+        this.endGame();
     }
 }
 
