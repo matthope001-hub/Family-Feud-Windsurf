@@ -510,6 +510,67 @@ class FamilyFeudGame {
         };
     }
     
+    createFamilyFeudTheme() {
+        return () => {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const notes = [
+                { freq: 523.25, duration: 0.2 }, // C5
+                { freq: 659.25, duration: 0.2 }, // E5
+                { freq: 783.99, duration: 0.2 }, // G5
+                { freq: 1046.50, duration: 0.4 }, // C6
+                { freq: 783.99, duration: 0.2 }, // G5
+                { freq: 659.25, duration: 0.4 }  // E5
+            ];
+            
+            let currentTime = audioContext.currentTime;
+            
+            notes.forEach((note, index) => {
+                setTimeout(() => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = note.freq;
+                    oscillator.type = 'square';
+                    
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + note.duration);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + note.duration);
+                }, index * 200);
+            });
+        };
+    }
+    
+    createGameShowWinSound() {
+        return () => {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const notes = [523.25, 659.25, 783.99, 1046.50]; // C5, E5, G5, C6
+            
+            notes.forEach((frequency, index) => {
+                setTimeout(() => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = frequency;
+                    oscillator.type = 'square';
+                    
+                    gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                }, index * 100);
+            });
+        };
+    }
+    
     playSound(soundName) {
         if (this.sounds[soundName]) {
             this.sounds[soundName]();
