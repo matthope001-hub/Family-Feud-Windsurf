@@ -657,11 +657,32 @@ class FamilyFeudGame {
             }
         });
         
-        // Remove excessive broadcasting - will only broadcast on state changes
+        // Add polling mechanism as fallback for cross-window synchronization
+        this.lastHostStateTimestamp = 0;
+        setInterval(() => {
+            this.pollHostState();
+        }, 1000); // Poll every second
+    }
+    
+    pollHostState() {
+        try {
+            const hostStateStr = localStorage.getItem('familyFeudHostState');
+            if (hostStateStr) {
+                const hostState = JSON.parse(hostStateStr);
+                if (hostState.timestamp && hostState.timestamp > this.lastHostStateTimestamp) {
+                    this.lastHostStateTimestamp = hostState.timestamp;
+                    this.syncFromHost(hostState);
+                }
+            }
+        } catch (error) {
+            console.error('Error polling host state:', error);
+        }
     }
     
     syncFromHost(hostState) {
         try {
+            console.log('Received host state:', hostState);
+            
             // Validate host state structure
             if (!hostState || typeof hostState !== 'object') {
                 console.warn('Invalid host state received');
@@ -670,6 +691,8 @@ class FamilyFeudGame {
             
             const oldQuestion = this.currentQuestionIndex;
             const oldTeam = this.currentTeam;
+            
+            console.log('Current question index:', this.currentQuestionIndex, 'New question index:', hostState.currentQuestionIndex);
             
             // Validate and extract values with type checking
             const newQuestionIndex = typeof hostState.currentQuestionIndex === 'number' && 

@@ -252,6 +252,8 @@ class HostControlPanel {
             timestamp: Date.now()
         };
         
+        console.log('Broadcasting game state:', gameState);
+        
         // Broadcast to localStorage (simulating WebSocket)
         localStorage.setItem('familyFeudHostState', JSON.stringify(gameState));
     }
