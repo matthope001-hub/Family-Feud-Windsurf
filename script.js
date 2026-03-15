@@ -645,11 +645,15 @@ class FamilyFeudGame {
     }
     
     setupHostSync() {
+        console.log('Setting up host synchronization...');
+        
         // Listen for host updates via localStorage
         window.addEventListener('storage', (e) => {
+            console.log('Storage event detected:', e.key, e.newValue ? 'new value' : 'cleared');
             if (e.key === 'familyFeudHostState' && e.newValue) {
                 try {
                     const hostState = JSON.parse(e.newValue);
+                    console.log('Storage event - parsing host state:', hostState);
                     this.syncFromHost(hostState);
                 } catch (error) {
                     console.error('Error parsing host state from localStorage:', error);
@@ -659,19 +663,38 @@ class FamilyFeudGame {
         
         // Add polling mechanism as fallback for cross-window synchronization
         this.lastHostStateTimestamp = 0;
+        this.pollCount = 0;
         setInterval(() => {
             this.pollHostState();
         }, 1000); // Poll every second
+        
+        // Add manual test function
+        window.testHostSync = () => {
+            console.log('Manual sync test triggered');
+            this.pollHostState();
+        };
+        
+        console.log('Host synchronization setup complete. Test with: testHostSync()');
     }
     
     pollHostState() {
+        this.pollCount++;
         try {
             const hostStateStr = localStorage.getItem('familyFeudHostState');
             if (hostStateStr) {
                 const hostState = JSON.parse(hostStateStr);
+                console.log(`Poll #${this.pollCount}: Found host state with timestamp ${hostState.timestamp}, last was ${this.lastHostStateTimestamp}`);
+                
                 if (hostState.timestamp && hostState.timestamp > this.lastHostStateTimestamp) {
+                    console.log('Newer host state found, syncing...');
                     this.lastHostStateTimestamp = hostState.timestamp;
                     this.syncFromHost(hostState);
+                } else {
+                    console.log('Host state is not newer, skipping');
+                }
+            } else {
+                if (this.pollCount % 10 === 0) { // Log every 10 seconds
+                    console.log(`Poll #${this.pollCount}: No host state found in localStorage`);
                 }
             }
         } catch (error) {

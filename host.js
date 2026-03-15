@@ -102,9 +102,18 @@ class HostControlPanel {
         }
         
         this.questionSelect.addEventListener('change', () => {
+            console.log('Question select changed to:', this.questionSelect.value);
             this.currentQuestionIndex = parseInt(this.questionSelect.value);
             this.loadQuestion();
         });
+        
+        // Add manual test function
+        window.testHostBroadcast = () => {
+            console.log('Manual broadcast test triggered');
+            this.broadcastGameState();
+        };
+        
+        console.log('Host panel initialized. Test with: testHostBroadcast()');
     }
     
     initializeSounds() {
