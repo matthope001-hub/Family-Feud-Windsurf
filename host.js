@@ -606,72 +606,143 @@ class HostControlPanel {
 let hostPanel;
 
 function loadQuestion() {
+    if (!hostPanel) {
+        console.error('Host panel not initialized yet');
+        return;
+    }
+    console.log('Global loadQuestion called');
     hostPanel.loadQuestion();
 }
 
 function addStrike() {
+    if (!hostPanel) {
+        console.error('Host panel not initialized yet');
+        return;
+    }
     hostPanel.addStrike();
 }
 
 function switchTeam() {
+    if (!hostPanel) {
+        console.error('Host panel not initialized yet');
+        return;
+    }
     hostPanel.switchTeam();
 }
 
 function addPoints(team, points) {
+    if (!hostPanel) {
+        console.error('Host panel not initialized yet');
+        return;
+    }
     hostPanel.addPoints(team, points);
 }
 
 function newGame() {
+    if (!hostPanel) {
+        console.error('Host panel not initialized yet');
+        return;
+    }
     hostPanel.newGame();
 }
 
 function nextQuestion() {
+    if (!hostPanel) {
+        console.error('Host panel not initialized yet');
+        return;
+    }
     hostPanel.nextQuestion();
 }
 
 function resetRound() {
+    if (!hostPanel) {
+        console.error('Host panel not initialized yet');
+        return;
+    }
     hostPanel.resetRound();
 }
 
 function endGame() {
+    if (!hostPanel) {
+        console.error('Host panel not initialized yet');
+        return;
+    }
     hostPanel.endGame();
 }
 
 function playSound(soundName) {
+    if (!hostPanel) {
+        console.error('Host panel not initialized yet');
+        return;
+    }
     hostPanel.playSound(soundName);
 }
 
 // Question Import Functions
 function scrapeFamilyFeudQuestions() {
+    if (!hostPanel) {
+        console.error('Host panel not initialized yet');
+        return;
+    }
     hostPanel.scrapeFamilyFeudQuestions();
 }
 
 function scrapeGameShowNetwork() {
+    if (!hostPanel) {
+        console.error('Host panel not initialized yet');
+        return;
+    }
     hostPanel.scrapeGameShowNetwork();
 }
 
 function importQuestions() {
+    if (!hostPanel) {
+        console.error('Host panel not initialized yet');
+        return;
+    }
     hostPanel.importQuestions();
 }
 
 function exportQuestions() {
+    if (!hostPanel) {
+        console.error('Host panel not initialized yet');
+        return;
+    }
     hostPanel.exportQuestions();
 }
 
 // Fast Money Functions
 function startFastMoney() {
+    if (!hostPanel) {
+        console.error('Host panel not initialized yet');
+        return;
+    }
     hostPanel.startFastMoneyRound();
 }
 
 function revealFastMoneyAnswer() {
+    if (!hostPanel) {
+        console.error('Host panel not initialized yet');
+        return;
+    }
     hostPanel.revealFastMoneyAnswer();
 }
 
 function resetFastMoney() {
+    if (!hostPanel) {
+        console.error('Host panel not initialized yet');
+        return;
+    }
     hostPanel.resetFastMoneyRound();
 }
 
 // Initialize host panel when page loads
 document.addEventListener('DOMContentLoaded', () => {
-    hostPanel = new HostControlPanel();
+    console.log('DOM loaded, initializing host panel...');
+    try {
+        hostPanel = new HostControlPanel();
+        console.log('Host panel initialized successfully:', hostPanel);
+    } catch (error) {
+        console.error('Failed to initialize host panel:', error);
+    }
 });
