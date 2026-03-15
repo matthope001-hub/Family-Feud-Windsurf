@@ -710,7 +710,7 @@ class FamilyFeudGame {
             
             // Reload question if changed
             if (oldQuestion !== this.currentQuestionIndex) {
-                this.loadQuestion();
+                this.loadQuestionFromHost(this.currentQuestionIndex);
             } else {
                 this.updateDisplay();
             }
@@ -811,6 +811,44 @@ class FamilyFeudGame {
                     console.error('Failed to recover from question loading error:', e);
                 }
             }, 2000);
+        }
+    }
+    
+    loadQuestionFromHost(questionIndex) {
+        try {
+            // Validate question index
+            if (questionIndex < 0 || questionIndex >= this.questions.length) {
+                throw new Error(`Invalid question index: ${questionIndex}`);
+            }
+            
+            this.currentQuestionIndex = questionIndex;
+            const currentQuestion = this.questions[this.currentQuestionIndex];
+            
+            // Validate question data
+            if (!currentQuestion || !currentQuestion.question || !Array.isArray(currentQuestion.answers)) {
+                throw new Error('Invalid question data loaded');
+            }
+            
+            this.questionText.textContent = currentQuestion.question;
+            this.totalAnswersEl.textContent = currentQuestion.answers.length;
+            this.answersFoundEl.textContent = '0';
+            
+            this.answersFound = [];
+            this.strikes = 0;
+            this.gameActive = true;
+            
+            this.resetAnswerSlots();
+            this.resetStrikes();
+            this.answerInput.value = '';
+            this.answerInput.focus();
+            
+            this.updateDisplay();
+            this.broadcastGameState();
+        } catch (error) {
+            console.error('Error loading question from host:', error);
+            // Show error to user
+            this.questionText.textContent = 'Error loading question from host. Please try again.';
+            this.gameActive = false;
         }
     }
     
