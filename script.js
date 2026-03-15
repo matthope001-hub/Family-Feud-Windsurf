@@ -1162,9 +1162,18 @@ class FamilyFeudGame {
         this.playerNameEl.textContent = playerName;
         this.finalPlayerName.textContent = playerName + ': ';
         
+        // Debug: Check if questions are loaded
+        console.log('Fast Money questions set:', this.fastMoneyQuestionsSet);
+        console.log('Fast Money questions array:', this.fastMoneyQuestions);
+        
         // Show questions
         this.fastMoneyQuestionElements.forEach((element, index) => {
-            element.textContent = this.fastMoneyQuestionsSet[index].question;
+            if (this.fastMoneyQuestionsSet[index]) {
+                element.textContent = this.fastMoneyQuestionsSet[index].question;
+            } else {
+                element.textContent = 'Error loading question';
+                console.error('No question at index:', index);
+            }
         });
         
         // Clear answers
