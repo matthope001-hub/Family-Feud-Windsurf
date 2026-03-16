@@ -821,6 +821,29 @@ async function importFromGoogleSheets(url) {
     } catch (error) {
         console.error('Error importing from Google Sheets:', error);
         alert('Error importing from Google Sheets: ' + error.message);
+        
+        // Fallback: Try direct CSV import if Google Sheets fails
+        if (error.message && error.message.includes('CORS')) {
+            console.log('CORS error detected, offering CSV fallback...');
+            const csvUrl = prompt('CORS error detected. Enter direct CSV URL (or paste CSV data):');
+            if (csvUrl) {
+                try {
+                    const csvResponse = await fetch(csvUrl);
+                    const csvData = await csvResponse.text();
+                    const fallbackQuestions = parseGoogleSheetsCSV(csvData);
+                    
+                    if (fallbackQuestions.length > 0) {
+                        hostPanel.importQuestionsData(fallbackQuestions);
+                        alert(`Fallback successful: Imported ${fallbackQuestions.length} questions from CSV!`);
+                    } else {
+                        alert('No valid questions found in CSV data');
+                    }
+                } catch (fallbackError) {
+                    console.error('Fallback CSV import failed:', fallbackError);
+                    alert('Fallback import failed: ' + fallbackError.message);
+                }
+            }
+        }
     }
 }
 
