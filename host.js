@@ -665,16 +665,28 @@ let hostPanel;
 let hostPanel;
 
 function loadQuestion() {
-    if (!hostPanel) {
-        console.error('Host panel not initialized yet');
-        return;
+    const maxRetries = 10;
+    let retryCount = 0;
+    
+    function tryLoad() {
+        if (!hostPanel) {
+            retryCount++;
+            console.log(`Host panel not ready (attempt ${retryCount}/${maxRetries})`);
+            
+            if (retryCount >= maxRetries) {
+                alert('Host panel failed to initialize after multiple attempts. Please refresh the page.');
+                return;
+            }
+            
+            // Wait a bit and try again
+            setTimeout(tryLoad, 500);
+        } else {
+            console.log('Global loadQuestion called');
+            hostPanel.loadQuestion();
+        }
     }
     
-    // Add small delay to ensure initialization is complete
-    setTimeout(() => {
-        console.log('Global loadQuestion called');
-        hostPanel.loadQuestion();
-    }, 100); // 100ms delay
+    tryLoad();
 }
 
 function addStrike() {
