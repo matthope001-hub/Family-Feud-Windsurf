@@ -790,11 +790,28 @@ class FamilyFeudGame {
             this.answersFound = newAnswersFound;
             this.gameActive = newGameActive;
             
-            // Reload question if changed
+            // Load question from host state directly - don't call loadQuestionFromHost
             if (oldQuestion !== this.currentQuestionIndex) {
-                this.loadQuestionFromHost(this.currentQuestionIndex);
-            } else {
-                this.updateDisplay();
+                console.log('Loading question from host state, index:', this.currentQuestionIndex);
+                const currentQuestion = this.questions[this.currentQuestionIndex];
+                
+                // Validate question data
+                if (!currentQuestion || !currentQuestion.question || !Array.isArray(currentQuestion.answers)) {
+                    throw new Error('Invalid question data loaded');
+                }
+                
+                this.questionText.textContent = currentQuestion.question;
+                this.totalAnswersEl.textContent = currentQuestion.answers.length;
+                this.answersFoundEl.textContent = '0';
+                
+                this.answersFound = [];
+                this.strikes = 0;
+                this.gameActive = true;
+                
+                this.resetAnswerSlots();
+                this.resetStrikes();
+                this.answerInput.value = '';
+                this.answerInput.focus();
             }
             
             // Update team display if changed
