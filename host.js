@@ -669,7 +669,7 @@ function loadQuestion() {
     let retryCount = 0;
     
     function tryLoad() {
-        if (!hostPanel) {
+        if (typeof hostPanel === 'undefined' || !hostPanel) {
             retryCount++;
             console.log(`Host panel not ready (attempt ${retryCount}/${maxRetries})`);
             
@@ -690,7 +690,7 @@ function loadQuestion() {
 }
 
 function addStrike() {
-    if (!hostPanel) {
+    if (typeof hostPanel === 'undefined' || !hostPanel) {
         console.error('Host panel not initialized yet');
         return;
     }
@@ -698,7 +698,7 @@ function addStrike() {
 }
 
 function switchTeam() {
-    if (!hostPanel) {
+    if (typeof hostPanel === 'undefined' || !hostPanel) {
         console.error('Host panel not initialized yet');
         return;
     }
@@ -706,7 +706,7 @@ function switchTeam() {
 }
 
 function addPoints(team, points) {
-    if (!hostPanel) {
+    if (typeof hostPanel === 'undefined' || !hostPanel) {
         console.error('Host panel not initialized yet');
         return;
     }
@@ -714,7 +714,7 @@ function addPoints(team, points) {
 }
 
 function newGame() {
-    if (!hostPanel) {
+    if (typeof hostPanel === 'undefined' || !hostPanel) {
         console.error('Host panel not initialized yet');
         return;
     }
@@ -722,7 +722,7 @@ function newGame() {
 }
 
 function nextQuestion() {
-    if (!hostPanel) {
+    if (typeof hostPanel === 'undefined' || !hostPanel) {
         console.error('Host panel not initialized yet');
         return;
     }
@@ -730,7 +730,7 @@ function nextQuestion() {
 }
 
 function resetRound() {
-    if (!hostPanel) {
+    if (typeof hostPanel === 'undefined' || !hostPanel) {
         console.error('Host panel not initialized yet');
         return;
     }
@@ -738,7 +738,7 @@ function resetRound() {
 }
 
 function endGame() {
-    if (!hostPanel) {
+    if (typeof hostPanel === 'undefined' || !hostPanel) {
         console.error('Host panel not initialized yet');
         return;
     }
