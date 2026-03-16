@@ -1,5 +1,25 @@
 class FamilyFeudGame {
     constructor() {
+        this.team1Score = 0;
+        this.team2Score = 0;
+        this.currentTeam = 1;
+        this.currentQuestionIndex = 0;
+        this.strikes = 0;
+        this.answersFound = [];
+        this.gameActive = false;
+        this.fastMoneyMode = false;
+        this.fastMoneyRound = 0;
+        this.fastMoneyPlayer1Score = 0;
+        this.fastMoneyPlayer2Score = 0;
+
+        this.setupQuestions();
+        this.initializeElements();
+        this.initializeSounds();
+        this.setupHostSync();
+        this.bindEvents();
+    }
+
+    setupQuestions() {
         this.questions = [
             {
                 question: "Name something people do to relax",
@@ -716,6 +736,12 @@ class FamilyFeudGame {
             const oldTeam = this.currentTeam;
             
             console.log('Current question index:', this.currentQuestionIndex, 'New question index:', hostState.currentQuestionIndex);
+            
+            // Update questions if host has new ones
+            if (hostState.questions && Array.isArray(hostState.questions)) {
+                console.log('Updating questions from host state');
+                this.updateQuestions(hostState.questions);
+            }
             
             // Validate and extract values with type checking
             const newQuestionIndex = typeof hostState.currentQuestionIndex === 'number' && 
