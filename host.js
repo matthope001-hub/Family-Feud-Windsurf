@@ -83,6 +83,23 @@ class HostControlPanel {
         this.updateQuestionSelector(); // Add this to populate all questions in dropdown
         this.startStatusUpdates();
     }
+    
+    initializeElements() {
+        this.questionSelect = document.getElementById('questionSelect');
+        this.manualAnswersList = document.getElementById('manualAnswersList');
+        this.currentQuestionNum = document.getElementById('currentQuestionNum');
+        this.currentTeamDisplay = document.getElementById('currentTeamDisplay');
+        this.strikesDisplay = document.getElementById('strikesDisplay');
+        this.answersFoundDisplay = document.getElementById('answersFoundDisplay');
+        this.team1ScoreDisplay = document.getElementById('team1ScoreDisplay');
+        this.team2ScoreDisplay = document.getElementById('team2ScoreDisplay');
+        this.connectionStatus = document.getElementById('connectionStatus');
+        
+        // Validate critical DOM elements
+        if (!this.questionSelect || !this.manualAnswersList) {
+            console.error('Critical host panel elements not found in DOM');
+            throw new Error('Required host panel elements are missing');
+        }
 }
 
 // Global functions for button onclick handlers
