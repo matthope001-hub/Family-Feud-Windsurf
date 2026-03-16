@@ -703,14 +703,24 @@ class FamilyFeudGame {
             const hostStateStr = localStorage.getItem('familyFeudHostState');
             if (hostStateStr) {
                 const hostState = JSON.parse(hostStateStr);
-                console.log(`Poll #${this.pollCount}: Found host state with timestamp ${hostState.timestamp}, last was ${this.lastHostStateTimestamp}`);
                 
-                if (hostState.timestamp && hostState.timestamp > this.lastHostStateTimestamp) {
-                    console.log('Newer host state found, syncing...');
-                    this.lastHostStateTimestamp = hostState.timestamp;
-                    this.syncFromHost(hostState);
+                // Validate timestamp is a number and reasonable
+                const hostTimestamp = parseInt(hostState.timestamp);
+                const isValidTimestamp = !isNaN(hostTimestamp) && hostTimestamp > 0;
+                
+                if (isValidTimestamp) {
+                    console.log(`Poll #${this.pollCount}: Found host state with timestamp ${hostTimestamp}, last was ${this.lastHostStateTimestamp}`);
+                    
+                    // Check if this is actually a newer state
+                    if (hostTimestamp > this.lastHostStateTimestamp) {
+                        console.log('Newer host state found, syncing...');
+                        this.lastHostStateTimestamp = hostTimestamp;
+                        this.syncFromHost(hostState);
+                    } else {
+                        console.log('Host state is not newer, skipping');
+                    }
                 } else {
-                    console.log('Host state is not newer, skipping');
+                    console.log(`Poll #${this.pollCount}: Invalid timestamp in host state: ${hostState.timestamp}`);
                 }
             } else {
                 if (this.pollCount % 10 === 0) { // Log every 10 seconds
