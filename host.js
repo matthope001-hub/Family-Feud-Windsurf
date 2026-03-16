@@ -109,11 +109,51 @@ class HostControlPanel {
         
         // Add manual test function
         window.testHostBroadcast = () => {
-            console.log('Manual broadcast test triggered');
-            this.broadcastGameState();
+            console.log('Manual host broadcast test triggered');
+            const testState = {
+                currentQuestionIndex: 0,
+                currentTeam: 1,
+                team1Score: 100,
+                team2Score: 50,
+                strikes: 1,
+                answersFound: [0, 2],
+                gameActive: true,
+                questions: [
+                    { question: "Test question 1", answers: [{ text: "Answer 1", points: 10 }] },
+                    { question: "Test question 2", answers: [{ text: "Answer 2", points: 20 }] }
+                ],
+                timestamp: Date.now()
+            };
+            
+            localStorage.setItem('familyFeudHostState', JSON.stringify(testState));
+            alert('Test state broadcasted! Check main game for updates.');
         };
         
-        console.log('Host panel initialized. Test with: testHostBroadcast()');
+        window.testGoogleSheetsAccess = async () => {
+            const testUrl = 'https://docs.google.com/spreadsheets/d/1qrcy535U2fP7_0H7Hm-3FFc0rwMxn1ZaaodsVuMOP5c/export?format=csv&gid=0';
+            
+            console.log('Testing Google Sheets access...');
+            
+            try {
+                const response = await fetch(testUrl);
+                const csvText = await response.text();
+                
+                console.log('Google Sheets access test successful!');
+                console.log('Response status:', response.status);
+                console.log('CSV preview:', csvText.substring(0, 200) + '...');
+                
+                alert(`Google Sheets is accessible! Status: ${response.status}\nCSV preview: ${csvText.substring(0, 100)}...`);
+                
+                return true;
+            } catch (error) {
+                console.error('Google Sheets access test failed:', error);
+                alert(`Google Sheets access failed: ${error.message}`);
+                return false;
+            }
+        };
+        
+        console.log('Host synchronization setup complete. Test with: testHostBroadcast()');
+        console.log('Google Sheets access test available: testGoogleSheetsAccess()');
     }
     
     initializeSounds() {
