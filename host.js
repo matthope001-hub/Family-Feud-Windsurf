@@ -797,10 +797,24 @@ async function importFromGoogleSheets(url) {
     try {
         console.log('Importing from Google Sheets:', url);
         
-        // Convert Google Sheets URL to export URL
-        const sheetId = url.match(/\/d\/([a-zA-Z0-9-_]+)/)[1];
-        const gid = url.match(/gid=([0-9]+)/) ? url.match(/gid=([0-9]+)/)[1] : '0';
+        // Validate Google Sheets URL format
+        if (!url || typeof url !== 'string') {
+            throw new Error('Invalid Google Sheets URL');
+        }
         
+        // Check for Google Sheets URL pattern
+        const googleSheetsMatch = url.match(/docs\.google\.com\/spreadsheets\/d\/([a-zA-Z0-9-_]+)\/edit\?.*gid=([0-9]+)?/);
+        
+        if (!googleSheetsMatch) {
+            throw new Error('Invalid Google Sheets URL format. Expected: https://docs.google.com/spreadsheets/d/ID/edit?gid=SHEET_ID');
+        }
+        
+        const sheetId = googleSheetsMatch[1];
+        const gid = googleSheetsMatch[2] || '0';
+        
+        console.log('Sheet ID:', sheetId, 'GID:', gid);
+        
+        // Convert Google Sheets URL to export URL
         const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
         
         console.log('Fetching from:', exportUrl);
@@ -823,24 +837,73 @@ async function importFromGoogleSheets(url) {
         alert('Error importing from Google Sheets: ' + error.message);
         
         // Fallback: Try direct CSV import if Google Sheets fails
-        if (error.message && error.message.includes('CORS')) {
-            console.log('CORS error detected, offering CSV fallback...');
-            const csvUrl = prompt('CORS error detected. Enter direct CSV URL (or paste CSV data):');
-            if (csvUrl) {
+        if (error.message && (error.message.includes('CORS') || error.message.includes('403') || error.message.includes('404'))) {
+            console.log('Google Sheets fetch failed, offering CSV fallback...');
+            
+            // Try manual CSV paste first
+            const csvData = prompt('Google Sheets failed. Please paste your CSV data here (or press Cancel for file upload):');
+            
+            if (csvData && csvData.trim()) {
                 try {
-                    const csvResponse = await fetch(csvUrl);
-                    const csvData = await csvResponse.text();
-                    const fallbackQuestions = parseGoogleSheetsCSV(csvData);
+                    const manualQuestions = parseGoogleSheetsCSV(csvData);
                     
-                    if (fallbackQuestions.length > 0) {
-                        hostPanel.importQuestionsData(fallbackQuestions);
-                        alert(`Fallback successful: Imported ${fallbackQuestions.length} questions from CSV!`);
+                    if (manualQuestions.length > 0) {
+                        hostPanel.importQuestionsData(manualQuestions);
+                        alert(`Manual import successful: Imported ${manualQuestions.length} questions from CSV!`);
                     } else {
                         alert('No valid questions found in CSV data');
                     }
-                } catch (fallbackError) {
-                    console.error('Fallback CSV import failed:', fallbackError);
-                    alert('Fallback import failed: ' + fallbackError.message);
+                } catch (parseError) {
+                    console.error('Manual CSV parse failed:', parseError);
+                    alert('Failed to parse CSV data: ' + parseError.message);
+                }
+            } else {
+                // Fallback to file upload
+                const csvUrl = prompt('Manual paste cancelled. Enter direct CSV URL (or leave empty for file upload):');
+                if (csvUrl) {
+                    try {
+                        const csvResponse = await fetch(csvUrl);
+                        const csvData = await csvResponse.text();
+                        const fallbackQuestions = parseGoogleSheetsCSV(csvData);
+                        
+                        if (fallbackQuestions.length > 0) {
+                            hostPanel.importQuestionsData(fallbackQuestions);
+                            alert(`Fallback successful: Imported ${fallbackQuestions.length} questions from CSV!`);
+                        } else {
+                            alert('No valid questions found in CSV data');
+                        }
+                    } catch (fallbackError) {
+                        console.error('Fallback CSV import failed:', fallbackError);
+                        alert('Fallback import failed: ' + fallbackError.message);
+                    }
+                } else {
+                    // Final fallback: file upload
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = '.csv';
+                    input.onchange = (e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                                try {
+                                    const csvText = event.target.result;
+                                    const fileQuestions = parseGoogleSheetsCSV(csvText);
+                                    
+                                    if (fileQuestions.length > 0) {
+                                        hostPanel.importQuestionsData(fileQuestions);
+                                        alert(`File import successful: Imported ${fileQuestions.length} questions!`);
+                                    } else {
+                                        alert('No valid questions found in CSV file');
+                                    }
+                                } catch (fileError) {
+                                    alert('Error parsing CSV file: ' + fileError.message);
+                                }
+                            };
+                            reader.readAsText(file);
+                        }
+                    };
+                    input.click();
                 }
             }
         }
