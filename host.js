@@ -86,7 +86,6 @@ class HostControlPanel {
     
     initializeElements() {
         this.questionSelect = document.getElementById('questionSelect');
-        this.answersList = document.getElementById('answersList');
         this.manualAnswersList = document.getElementById('manualAnswersList');
         this.currentQuestionNum = document.getElementById('currentQuestionNum');
         this.currentTeamDisplay = document.getElementById('currentTeamDisplay');
@@ -97,7 +96,7 @@ class HostControlPanel {
         this.connectionStatus = document.getElementById('connectionStatus');
         
         // Validate critical DOM elements
-        if (!this.questionSelect || !this.answersList || !this.manualAnswersList) {
+        if (!this.questionSelect || !this.manualAnswersList) {
             console.error('Critical host panel elements not found in DOM');
             throw new Error('Required host panel elements are missing');
         }
