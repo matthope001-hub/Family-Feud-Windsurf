@@ -237,6 +237,15 @@ let hostPanel;
     }
     
     broadcastGameState() {
+        // Prevent duplicate broadcasts with same timestamp
+        const now = Date.now();
+        if (this.lastBroadcastTime && (now - this.lastBroadcastTime) < 100) {
+            console.log('Skipping duplicate broadcast (too soon)');
+            return;
+        }
+        
+        this.lastBroadcastTime = now;
+        
         const gameState = {
             currentQuestionIndex: this.currentQuestionIndex,
             currentTeam: this.currentTeam,
@@ -245,7 +254,7 @@ let hostPanel;
             strikes: this.strikes,
             answersFound: this.answersFound,
             gameActive: this.gameActive,
-            timestamp: Date.now()
+            timestamp: this.lastBroadcastTime
         };
         
         console.log('Broadcasting game state:', gameState);
