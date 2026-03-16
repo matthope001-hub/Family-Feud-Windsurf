@@ -80,6 +80,7 @@ class HostControlPanel {
         this.initializeSounds();
         this.setupWebSocket();
         this.loadQuestion();
+        this.updateQuestionSelector(); // Add this to populate all questions in dropdown
         this.startStatusUpdates();
     }
     
