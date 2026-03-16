@@ -668,8 +668,12 @@ function loadQuestion() {
         console.error('Host panel not initialized yet');
         return;
     }
-    console.log('Global loadQuestion called');
-    hostPanel.loadQuestion();
+    
+    // Add small delay to ensure initialization is complete
+    setTimeout(() => {
+        console.log('Global loadQuestion called');
+        hostPanel.loadQuestion();
+    }, 100); // 100ms delay
 }
 
 function addStrike() {
