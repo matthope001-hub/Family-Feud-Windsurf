@@ -273,6 +273,12 @@ let hostPanel;
     displayAnswers() {
         const currentQuestion = this.questions[this.currentQuestionIndex];
         
+        // Check if elements exist before using them
+        if (!this.answersList || !this.manualAnswersList) {
+            console.error('Answer list elements not found in DOM');
+            return;
+        }
+        
         // Update answers list
         this.answersList.innerHTML = '';
         this.manualAnswersList.innerHTML = '';
@@ -294,7 +300,11 @@ let hostPanel;
             
             answerItem.appendChild(answerTextDiv);
             answerItem.appendChild(answerPointsDiv);
-            this.answersList.appendChild(answerItem);
+            
+            // Only add to answersList if element exists
+            if (this.answersList) {
+                this.answersList.appendChild(answerItem);
+            }
             
             // Manual reveal buttons
             const revealBtn = document.createElement('button');
@@ -305,7 +315,11 @@ let hostPanel;
                 revealBtn.disabled = true;
                 revealBtn.className = 'control-btn disabled';
             }
-            this.manualAnswersList.appendChild(revealBtn);
+            
+            // Only add to manualAnswersList if element exists
+            if (this.manualAnswersList) {
+                this.manualAnswersList.appendChild(revealBtn);
+            }
         });
     }
     
