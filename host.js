@@ -600,6 +600,64 @@ class HostControlPanel {
         // Broadcast reset
         this.broadcastGameState();
     }
+    
+    importQuestionsData(questions) {
+        try {
+            // Validate questions array
+            if (!Array.isArray(questions)) {
+                throw new Error('Questions must be an array');
+            }
+            
+            // Validate each question
+            const validQuestions = questions.filter((q, index) => {
+                if (!q.question || !Array.isArray(q.answers)) {
+                    console.warn(`Invalid question at index ${index}:`, q);
+                    return false;
+                }
+                return true;
+            });
+            
+            if (validQuestions.length === 0) {
+                throw new Error('No valid questions found');
+            }
+            
+            // Update questions
+            this.questions = validQuestions;
+            this.currentQuestionIndex = 0;
+            this.currentTeam = 1;
+            this.team1Score = 0;
+            this.team2Score = 0;
+            this.strikes = 0;
+            this.answersFound = [];
+            this.gameActive = true;
+            
+            // Update question selector
+            this.updateQuestionSelector();
+            
+            // Load first question
+            this.loadQuestion();
+            
+            console.log(`Successfully imported ${validQuestions.length} questions`);
+            alert(`Successfully imported ${validQuestions.length} questions!`);
+            
+        } catch (error) {
+            console.error('Error importing questions:', error);
+            alert('Error importing questions: ' + error.message);
+        }
+    }
+    
+    updateQuestionSelector() {
+        // Clear existing options
+        this.questionSelect.innerHTML = '';
+        
+        // Add questions to selector
+        this.questions.forEach((question, index) => {
+            const option = document.createElement('option');
+            option.value = index;
+            option.textContent = `Question ${index + 1}: ${question.question.substring(0, 50)}${question.question.length > 50 ? '...' : ''}`;
+            this.questionSelect.appendChild(option);
+        });
+    }
 }
 
 // Global functions for button onclick handlers
@@ -700,7 +758,120 @@ function importQuestions() {
         console.error('Host panel not initialized yet');
         return;
     }
-    hostPanel.importQuestions();
+    
+    // Check if Google Sheets URL is provided
+    const googleSheetsUrl = prompt('Enter Google Sheets URL (leave empty for file import):');
+    
+    if (googleSheetsUrl && googleSheetsUrl.includes('docs.google.com/spreadsheets')) {
+        // Import from Google Sheets
+        importFromGoogleSheets(googleSheetsUrl);
+    } else {
+        // Original file import
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.json';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const questions = JSON.parse(event.target.result);
+                        hostPanel.importQuestionsData(questions);
+                    } catch (error) {
+                        alert('Error parsing JSON file: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+            }
+        };
+        input.click();
+    }
+}
+
+async function importFromGoogleSheets(url) {
+    try {
+        console.log('Importing from Google Sheets:', url);
+        
+        // Convert Google Sheets URL to export URL
+        const sheetId = url.match(/\/d\/([a-zA-Z0-9-_]+)/)[1];
+        const gid = url.match(/gid=([0-9]+)/) ? url.match(/gid=([0-9]+)/)[1] : '0';
+        
+        const exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+        
+        console.log('Fetching from:', exportUrl);
+        
+        const response = await fetch(exportUrl);
+        const csvText = await response.text();
+        
+        // Parse CSV and convert to questions format
+        const questions = parseGoogleSheetsCSV(csvText);
+        
+        if (questions.length > 0) {
+            hostPanel.importQuestionsData(questions);
+            alert(`Successfully imported ${questions.length} questions from Google Sheets!`);
+        } else {
+            alert('No valid questions found in Google Sheets');
+        }
+        
+    } catch (error) {
+        console.error('Error importing from Google Sheets:', error);
+        alert('Error importing from Google Sheets: ' + error.message);
+    }
+}
+
+function parseGoogleSheetsCSV(csvText) {
+    const lines = csvText.split('\n').filter(line => line.trim());
+    const questions = [];
+    
+    // Skip header row and process each line
+    for (let i = 1; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        
+        // Parse CSV line (handle commas in quotes)
+        const parts = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let char of line) {
+            if (char === '"' && !inQuotes) {
+                inQuotes = true;
+            } else if (char === '"' && inQuotes) {
+                inQuotes = false;
+            } else if (char === ',' && !inQuotes) {
+                parts.push(current.trim());
+                current = '';
+            } else {
+                current += char;
+            }
+        }
+        parts.push(current.trim());
+        
+        if (parts.length >= 2) {
+            const question = parts[0].replace(/^"|"$/g, '');
+            
+            // Parse answers (pairs of answer,points)
+            const answers = [];
+            for (let j = 1; j < parts.length; j += 2) {
+                if (parts[j] && parts[j+1]) {
+                    answers.push({
+                        text: parts[j].replace(/^"|"$/g, ''),
+                        points: parseInt(parts[j+1]) || 0
+                    });
+                }
+            }
+            
+            if (question && answers.length > 0) {
+                questions.push({
+                    question: question,
+                    answers: answers
+                });
+            }
+        }
+    }
+    
+    return questions;
 }
 
 function exportQuestions() {
