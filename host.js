@@ -1019,6 +1019,31 @@ function resetFastMoney() {
     hostPanel.resetFastMoneyRound();
 }
 
+// Question Import Functions
+function scrapeFamilyFeudQuestions() {
+    if (typeof hostPanel === 'undefined' || !hostPanel) {
+        console.error('Host panel not initialized yet');
+        return;
+    }
+    hostPanel.scrapeFamilyFeudQuestions();
+}
+
+function scrapeGameShowNetwork() {
+    if (typeof hostPanel === 'undefined' || !hostPanel) {
+        console.error('Host panel not initialized yet');
+        return;
+    }
+    hostPanel.scrapeGameShowNetwork();
+}
+
+function importQuestions() {
+    if (typeof hostPanel === 'undefined' || !hostPanel) {
+        console.error('Host panel not initialized yet');
+        return;
+    }
+    hostPanel.importQuestions();
+}
+
 // Initialize host panel when page loads
 document.addEventListener('DOMContentLoaded', () => {
     console.log('DOM loaded, initializing host panel...');
