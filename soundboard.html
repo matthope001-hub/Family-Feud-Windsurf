@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"></head>
+<body>
+
+<audio id="a" loop>
+  <source src="sounds/family-feud-theme-feud-audio.mp3" type="audio/mpeg">
+</audio>
+<audio id="ding">
+  <source src="sounds/family-feud-good-answer.mp3" type="audio/mpeg">
+</audio>
+<audio id="buzz">
+  <source src="sounds/wrong-answer-family-feud-strike.mp3" type="audio/mpeg">
+</audio>
+<audio id="faceoff">
+  <source src="sounds/face-off.mp3" type="audio/mpeg">
+</audio>
+<audio id="tryagain">
+  <source src="sounds/try-again.mp3" type="audio/mpeg">
+</audio>
+<audio id="fmreveal">
+  <source src="sounds/fast-money-answer-reveal.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+var a        = document.getElementById('a');
+var ding     = document.getElementById('ding');
+var buzz     = document.getElementById('buzz');
+var faceoff  = document.getElementById('faceoff');
+var tryagain = document.getElementById('tryagain');
+var fmreveal = document.getElementById('fmreveal');
+
+a.volume        = 0.6;
+ding.volume     = 0.8;
+buzz.volume     = 0.8;
+faceoff.volume  = 0.8;
+tryagain.volume = 0.8;
+fmreveal.volume = 0.8;
+
+window.addEventListener('message', function(e) {
+  if (e.data === 'play')    { a.volume = 0.6; a.currentTime = 0; a.play(); }
+  if (e.data === 'stop')    { a.pause(); a.currentTime = 0; a.volume = 0.6; }
+  if (e.data === 'restart') { a.volume = 0.6; a.currentTime = 0; a.play(); }
+  if (e.data === 'fade') {
+    var t = setInterval(function() {
+      if (a.volume > 0.05) { a.volume -= 0.05; }
+      else { a.pause(); clearInterval(t); }
+    }, 40);
+  }
+  if (e.data === 'ding')     { ding.currentTime = 0;     ding.play(); }
+  if (e.data === 'buzz')     { buzz.currentTime = 0;     buzz.play(); }
+  if (e.data === 'faceoff')  { faceoff.currentTime = 0;  faceoff.play(); }
+  if (e.data === 'tryagain') { tryagain.currentTime = 0; tryagain.play(); }
+  if (e.data === 'fmreveal') { fmreveal.currentTime = 0; fmreveal.play(); }
+  if (typeof e.data === 'number') a.volume = e.data;
+});
+</script>
+
+</body>
+</html>
